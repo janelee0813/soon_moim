@@ -121,8 +121,13 @@
     </div>
 
     <div class="neon-card animate-glow-pulse mt-6 p-6 animate-fade-up" style="animation-delay:220ms">
-      <div id="verse-ref" class="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-neon-purple">
-        호세아 8장 13절
+      <div class="mb-3 flex items-center justify-between gap-3">
+        <div id="verse-ref" class="text-[11px] font-semibold uppercase tracking-[0.2em] text-neon-purple">
+          호세아 8장 13절
+        </div>
+        <div id="verse-date" class="shrink-0 text-[11px] font-medium text-muted-foreground">
+          2026.08.22(토)
+        </div>
       </div>
       <p id="verse-text" class="text-lg leading-relaxed text-foreground/90">
         그들이 내게 고기를 제물로 드리고 먹을지라도 여호와는 그것을 기뻐하지 아니하고 이제 그들의 죄악을 기억하여 그 죄를 벌하리니 그들은 애굽으로 다시 가리라
@@ -221,12 +226,25 @@
     link.href = 'https://www.woorichurch.org/modu/ov/ov_meditation.asp?ov_date=' + todayStr;
   }
 
+  var WEEKDAYS_KO = ['일', '월', '화', '수', '목', '금', '토'];
+
+  function formatVerseDate(dateStr) {
+    // dateStr: 'YYYY-MM-DD' (KST 기준 날짜). UTC 자정으로 파싱해 타임존 영향 없이 그대로 표시
+    var d = new Date(dateStr + 'T00:00:00Z');
+    var y = d.getUTCFullYear();
+    var m = pad2(d.getUTCMonth() + 1);
+    var day = pad2(d.getUTCDate());
+    var weekday = WEEKDAYS_KO[d.getUTCDay()];
+    return y + '.' + m + '.' + day + '(' + weekday + ')';
+  }
+
   function loadTodayVerse() {
     fetch('data/verse.json?t=' + Date.now(), { cache: 'no-store' })
       .then(function (res) { if (!res.ok) throw new Error('load fail'); return res.json(); })
       .then(function (data) {
         document.getElementById('verse-ref').textContent = data.reference;
         document.getElementById('verse-text').textContent = data.text;
+        document.getElementById('verse-date').textContent = formatVerseDate(data.date);
       })
       .catch(function () {
         // data/verse.json을 불러오지 못하면 페이지에 저장된 마지막 값을 그대로 둠
