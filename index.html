@@ -100,17 +100,17 @@
     </h1>
 
     <div class="mt-8 animate-fade-up" style="animation-delay:140ms">
-      <button type="button" class="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue px-6 py-3 text-sm font-semibold text-background shadow-[0_10px_40px_-10px_rgba(181,102,255,0.7)] transition-transform hover:scale-[1.03]">
+      <a id="meditation-btn" href="https://www.woorichurch.org/modu/ov/ov_meditation.asp" target="_blank" rel="noopener" class="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue px-6 py-3 text-sm font-semibold text-background shadow-[0_10px_40px_-10px_rgba(181,102,255,0.7)] transition-transform hover:scale-[1.03]">
         한구절묵상
-      </button>
+      </a>
     </div>
 
     <div class="neon-card animate-glow-pulse mt-6 p-6 animate-fade-up" style="animation-delay:220ms">
-      <div class="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-neon-purple">
-        시편 23편 1절
+      <div id="verse-ref" class="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-neon-purple">
+        호세아 8장 13절
       </div>
-      <p class="text-lg leading-relaxed text-foreground/90">
-        여호와는 나의 목자시니 내가 부족함이 없으리로다
+      <p id="verse-text" class="text-lg leading-relaxed text-foreground/90">
+        그들이 내게 고기를 제물로 드리고 먹을지라도 여호와는 그것을 기뻐하지 아니하고 이제 그들의 죄악을 기억하여 그 죄를 벌하리니 그들은 애굽으로 다시 가리라
       </p>
     </div>
 
@@ -182,6 +182,54 @@
   }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
 
   items.forEach(function (el) { obs.observe(el); });
+
+  // 한국 표준시(KST, UTC+9) 기준 오늘 날짜 문자열(YYYY-MM-DD)과
+  // 다음 00:00까지 남은 시간을 계산
+  var KST_OFFSET_MS = 9 * 60 * 60 * 1000;
+
+  function pad2(n) { return String(n).padStart(2, '0'); }
+
+  function getKstDateString(nowMs) {
+    var kst = new Date(nowMs + KST_OFFSET_MS);
+    return kst.getUTCFullYear() + '-' + pad2(kst.getUTCMonth() + 1) + '-' + pad2(kst.getUTCDate());
+  }
+
+  function msUntilNextKstMidnight(nowMs) {
+    var kst = new Date(nowMs + KST_OFFSET_MS);
+    var nextMidnightKst = Date.UTC(kst.getUTCFullYear(), kst.getUTCMonth(), kst.getUTCDate() + 1, 0, 0, 0) - KST_OFFSET_MS;
+    return nextMidnightKst - nowMs;
+  }
+
+  function updateMeditationLink() {
+    var todayStr = getKstDateString(Date.now());
+    var link = document.getElementById('meditation-btn');
+    link.href = 'https://www.woorichurch.org/modu/ov/ov_meditation.asp?ov_date=' + todayStr;
+  }
+
+  function loadTodayVerse() {
+    fetch('data/verse.json?t=' + Date.now(), { cache: 'no-store' })
+      .then(function (res) { if (!res.ok) throw new Error('load fail'); return res.json(); })
+      .then(function (data) {
+        document.getElementById('verse-ref').textContent = data.reference;
+        document.getElementById('verse-text').textContent = data.text;
+      })
+      .catch(function () {
+        // data/verse.json을 불러오지 못하면 페이지에 저장된 마지막 값을 그대로 둠
+      });
+  }
+
+  function scheduleMidnightRefresh() {
+    var delay = msUntilNextKstMidnight(Date.now()) + 2000; // 자정 넘어가는 순간을 확실히 지나도록 여유를 둠
+    setTimeout(function () {
+      updateMeditationLink();
+      loadTodayVerse();
+      scheduleMidnightRefresh();
+    }, delay);
+  }
+
+  updateMeditationLink();
+  loadTodayVerse();
+  scheduleMidnightRefresh();
 </script>
 
 </body>
