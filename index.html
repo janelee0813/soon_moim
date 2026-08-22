@@ -170,12 +170,32 @@
 <script>
   var members = [
     { name: "이종환", avatar: "assets/members/leader.png" },
-    { name: "김민준" }, { name: "이서연" }, { name: "박도현" }, { name: "최지우" },
-    { name: "정하은" }, { name: "강태윤" }, { name: "윤소율" }, { name: "임현우" },
-    { name: "한지민" }
+    { name: "권은주", gender: "F" },
+    { name: "김경민", gender: "F" },
+    { name: "김민지", gender: "F" },
+    { name: "김상미", gender: "F" },
+    { name: "김원태", gender: "M" },
+    { name: "윤주혜", gender: "F" },
+    { name: "이은빈", gender: "F" },
+    { name: "홍영민", gender: "F" },
+    { name: "이수정", gender: "F" },
+    { name: "이화진", gender: "F" },
+    { name: "김효진", gender: "F" }
   ];
 
   var AVATAR_BG = 'f9e7cb';
+  var FEMALE_HAIR = ['long', 'bobCut', 'curly', 'pigtails', 'curlyBun', 'bobBangs', 'straightBun', 'extraLong', 'curlyHighTop'];
+  var MALE_HAIR = ['shortCombover', 'buzzcut', 'fade', 'cap', 'beanie', 'sideShave', 'shortComboverChops', 'balding'];
+
+  function personaAvatarUrl(seed, gender) {
+    var hairSet = gender === 'M' ? MALE_HAIR : FEMALE_HAIR;
+    var facialHairProbability = gender === 'M' ? 25 : 0;
+    var params = 'seed=' + encodeURIComponent(seed) +
+      '&backgroundColor=' + AVATAR_BG +
+      '&facialHairProbability=' + facialHairProbability;
+    hairSet.forEach(function (h) { params += '&hair=' + h; });
+    return 'https://api.dicebear.com/7.x/personas/svg?' + params;
+  }
 
   var grid = document.getElementById('member-grid');
   members.forEach(function (member, i) {
@@ -185,7 +205,7 @@
 
     var avatarSrc = member.avatar
       ? member.avatar
-      : 'https://api.dicebear.com/7.x/personas/svg?seed=' + encodeURIComponent(member.name + i) + '&backgroundColor=' + AVATAR_BG;
+      : personaAvatarUrl(member.name + i, member.gender);
 
     wrap.innerHTML =
       '<div class="neon-card avatar-box w-full rounded-2xl">' +
