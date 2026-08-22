@@ -1,0 +1,223 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0%25' stop-color='%23b566ff'/><stop offset='50%25' stop-color='%23ff5fb0'/><stop offset='100%25' stop-color='%235ec8ff'/></linearGradient></defs><rect width='32' height='32' rx='7' ry='7' fill='url(%23g)'/></svg>" />
+<title>MY PAGE - 분당우리교회 4청년부 이종환 순</title>
+
+<link rel="preconnect" href="https://cdn.jsdelivr.net" />
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="assets/tailwind-config.js"></script>
+<link rel="stylesheet" href="assets/theme.css" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/supabase-client.js"></script>
+<script src="assets/app.js"></script>
+<style>
+  .stat-card {
+    border-radius: 1rem;
+    border: 1px solid rgba(140,110,200,0.28);
+    background: rgba(21,16,31,0.6);
+    padding: 16px;
+    text-align: center;
+  }
+  .stat-num { font-size: 24px; font-weight: 700; color: #f5f1ff; }
+  .stat-label { margin-top: 4px; font-size: 12px; color: #9b94b3; }
+  .attend-badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 9999px;
+    padding: 2px 10px;
+    font-size: 11px;
+    font-weight: 600;
+  }
+  .attend-badge.present { background: rgba(94,224,168,0.15); color: #5ee0a8; }
+  .attend-badge.absent { background: rgba(255,95,109,0.12); color: #ff5f6d; }
+  .attend-badge.online { background: rgba(94,200,255,0.15); color: #5ec8ff; }
+  .textarea-field {
+    width: 100%;
+    min-height: 110px;
+    border-radius: 0.75rem;
+    border: 1px solid rgba(140,110,200,0.28);
+    background: rgba(10,6,18,0.5);
+    color: #f5f1ff;
+    padding: 12px;
+    font-size: 14px;
+    line-height: 1.6;
+    outline: none;
+    resize: vertical;
+  }
+  .textarea-field::placeholder { color: #6b6480; }
+</style>
+</head>
+<body class="bg-background text-foreground">
+
+<nav class="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur-sm">
+  <div class="mx-auto max-w-screen-md px-5">
+    <div class="flex items-center justify-between gap-2 py-3">
+      <div class="flex items-center gap-2">
+        <a href="index.html" class="nav-link">홈</a>
+        <a href="notice.html" class="nav-link">공지</a>
+        <a href="calendar.html" class="nav-link">일정</a>
+      </div>
+      <div id="nav-auth" class="flex items-center gap-2"></div>
+    </div>
+  </div>
+</nav>
+
+<section class="relative overflow-hidden">
+  <div class="grid-bg absolute inset-0 -z-10"></div>
+
+  <div class="mx-auto max-w-screen-md px-5 pt-10 pb-20 sm:pt-14">
+
+    <div class="reveal-item mb-8">
+      <div class="mb-3 flex justify-start">
+        <span class="inline-flex items-center gap-2 rounded-full border border-border bg-surface/60 px-3 py-1 text-[11px] font-medium tracking-[0.18em] text-neon-purple uppercase">
+          <span class="h-1.5 w-1.5 rounded-full bg-neon-purple shadow-[0_0_8px_#b566ff]"></span>
+          My Page
+        </span>
+      </div>
+      <h1 id="welcome-title" class="text-2xl font-bold leading-tight tracking-tight text-foreground sm:text-3xl md:text-4xl">
+        &nbsp;
+      </h1>
+    </div>
+
+    <!-- 금주의 기도제목 입력 -->
+    <div class="neon-card reveal-item mb-6 p-5 sm:p-6">
+      <h2 class="mb-3 text-base font-bold text-foreground sm:text-lg">금주의 기도제목</h2>
+      <form id="prayer-form">
+        <textarea id="prayer-content" class="textarea-field" maxlength="1000" placeholder="이번 주 기도제목을 나눠주세요"></textarea>
+        <div class="mt-3 flex items-center justify-between gap-3">
+          <span id="prayer-saved-at" class="text-[11px] text-muted-foreground"></span>
+          <button type="submit" class="rounded-full bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue px-5 py-2 text-sm font-semibold text-background transition-transform hover:scale-[1.03]">저장</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- 순원 전체 기도제목 -->
+    <div class="neon-card reveal-item mb-6 p-5 sm:p-6">
+      <h2 class="mb-1 text-base font-bold text-foreground sm:text-lg">순원 전체 기도제목</h2>
+      <p class="mb-1 text-xs text-muted-foreground">순원들이 나눠준 기도제목이에요.</p>
+      <div id="prayer-list" class="mt-2"></div>
+    </div>
+
+    <!-- 내 출석 통계 -->
+    <div class="neon-card reveal-item p-5 sm:p-6">
+      <h2 class="mb-4 text-base font-bold text-foreground sm:text-lg">내 출석 통계</h2>
+
+      <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div class="stat-card">
+          <div class="stat-num" id="stat-total">0</div>
+          <div class="stat-label">기록된 주</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="stat-worship">0</div>
+          <div class="stat-label">주일예배 참석</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="stat-dept">0</div>
+          <div class="stat-label">부서모임 참석</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-num" id="stat-soon">0</div>
+          <div class="stat-label">순모임 참석</div>
+        </div>
+      </div>
+
+      <div id="attend-history" class="mt-5"></div>
+      <p id="attend-empty" class="hidden text-sm text-muted-foreground">아직 출석 기록이 없어요.</p>
+    </div>
+
+  </div>
+</section>
+
+<script>
+  var session = requireLogin();
+</script>
+<script>
+  if (session) {
+    document.getElementById('welcome-title').textContent = session.name + '님, 환영합니다';
+
+    // ---- 금주의 기도제목 입력 ----
+    var prayerForm = document.getElementById('prayer-form');
+    var prayerContent = document.getElementById('prayer-content');
+    var prayerSavedAt = document.getElementById('prayer-saved-at');
+
+    sb.from('prayer_requests').select('*').eq('member_id', session.id).maybeSingle().then(function (res) {
+      if (res.data) {
+        prayerContent.value = res.data.content;
+        prayerSavedAt.textContent = '마지막 저장: ' + formatDate(res.data.updated_at);
+      }
+    });
+
+    prayerForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var content = prayerContent.value.trim();
+      if (!content) return;
+
+      var btn = prayerForm.querySelector('button[type="submit"]');
+      btn.disabled = true;
+
+      sb.from('prayer_requests')
+        .upsert({ member_id: session.id, content: content, updated_at: new Date().toISOString() }, { onConflict: 'member_id' })
+        .select()
+        .then(function (res) {
+          btn.disabled = false;
+          if (res.error) return;
+          prayerSavedAt.textContent = '저장되었습니다';
+          loadAndRenderPrayerList(document.getElementById('prayer-list'));
+        });
+    });
+
+    // ---- 순원 전체 기도제목 ----
+    loadAndRenderPrayerList(document.getElementById('prayer-list'));
+
+    // ---- 내 출석 통계 ----
+    sb.from('attendance')
+      .select('*')
+      .eq('member_id', session.id)
+      .order('service_date', { ascending: false })
+      .then(function (res) {
+        var rows = res.data || [];
+
+        var worshipCount = rows.filter(function (r) { return r.sunday_worship === 'present'; }).length;
+        var deptCount = rows.filter(function (r) { return r.department_meeting === 'present'; }).length;
+        var soonCount = rows.filter(function (r) { return r.soon_meeting === 'present'; }).length;
+
+        document.getElementById('stat-total').textContent = String(rows.length);
+        document.getElementById('stat-worship').textContent = String(worshipCount);
+        document.getElementById('stat-dept').textContent = String(deptCount);
+        document.getElementById('stat-soon').textContent = String(soonCount);
+
+        var historyEl = document.getElementById('attend-history');
+        if (rows.length === 0) {
+          document.getElementById('attend-empty').classList.remove('hidden');
+          return;
+        }
+
+        var html = rows.map(function (r) {
+          var worshipBadge = r.sunday_worship === 'present'
+            ? '<span class="attend-badge present">주일예배 참석</span>'
+            : (r.online_worship
+                ? '<span class="attend-badge online">온라인예배</span>'
+                : '<span class="attend-badge absent">주일예배 결석</span>');
+          var deptBadge = '<span class="attend-badge ' + (r.department_meeting === 'present' ? 'present' : 'absent') + '">부서모임 ' + (r.department_meeting === 'present' ? '참석' : '결석') + '</span>';
+          var soonBadge = '<span class="attend-badge ' + (r.soon_meeting === 'present' ? 'present' : 'absent') + '">순모임 ' + (r.soon_meeting === 'present' ? '참석' : '결석') + '</span>';
+
+          return '<div class="flex flex-wrap items-center gap-2 border-t border-border/60 py-3 first:border-0">' +
+            '<span class="w-24 shrink-0 text-xs font-semibold text-muted-foreground">' + formatDate(r.service_date) + '</span>' +
+            worshipBadge + deptBadge + soonBadge +
+          '</div>';
+        }).join('');
+
+        historyEl.innerHTML = html;
+      });
+  }
+
+  var items = document.querySelectorAll('.reveal-item');
+  items.forEach(function (el) { el.classList.add('revealed'); });
+</script>
+
+</body>
+</html>

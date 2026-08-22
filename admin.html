@@ -1,0 +1,443 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0%25' stop-color='%23b566ff'/><stop offset='50%25' stop-color='%23ff5fb0'/><stop offset='100%25' stop-color='%235ec8ff'/></linearGradient></defs><rect width='32' height='32' rx='7' ry='7' fill='url(%23g)'/></svg>" />
+<title>관리자 - 분당우리교회 4청년부 이종환 순</title>
+
+<link rel="preconnect" href="https://cdn.jsdelivr.net" />
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="assets/tailwind-config.js"></script>
+<link rel="stylesheet" href="assets/theme.css" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/supabase-client.js"></script>
+<script src="assets/app.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+  .seg-btn {
+    flex: 1;
+    text-align: center;
+    border-radius: 9999px;
+    padding: 6px 0;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1px solid rgba(140,110,200,0.28);
+    color: #9b94b3;
+    transition: all .15s ease;
+  }
+  .seg-btn.is-on.present { background: rgba(94,224,168,0.15); border-color: rgba(94,224,168,0.5); color: #5ee0a8; }
+  .seg-btn.is-on.absent { background: rgba(255,95,109,0.12); border-color: rgba(255,95,109,0.5); color: #ff5f6d; }
+  .online-check {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: #5ec8ff;
+  }
+  .member-row { border-top: 1px solid rgba(140,110,200,0.2); padding: 14px 0; }
+  .member-row:first-child { border-top: none; padding-top: 0; }
+  .textarea-field {
+    width: 100%;
+    min-height: 90px;
+    border-radius: 0.75rem;
+    border: 1px solid rgba(140,110,200,0.28);
+    background: rgba(10,6,18,0.5);
+    color: #f5f1ff;
+    padding: 12px;
+    font-size: 14px;
+    line-height: 1.6;
+    outline: none;
+    resize: vertical;
+  }
+  .textarea-field::placeholder { color: #6b6480; }
+  .select-field, .date-field, .pin-field {
+    border-radius: 0.75rem;
+    border: 1px solid rgba(140,110,200,0.28);
+    background: rgba(10,6,18,0.5);
+    color: #f5f1ff;
+    padding: 8px 10px;
+    font-size: 13px;
+    outline: none;
+  }
+  .note-tag {
+    display: inline-flex;
+    border-radius: 9999px;
+    padding: 1px 9px;
+    font-size: 11px;
+    font-weight: 600;
+    background: rgba(181,102,255,0.15);
+    color: #b566ff;
+  }
+</style>
+</head>
+<body class="bg-background text-foreground">
+
+<nav class="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur-sm">
+  <div class="mx-auto max-w-screen-md px-5">
+    <div class="flex items-center justify-between gap-2 py-3">
+      <div class="flex items-center gap-2">
+        <a href="index.html" class="nav-link">홈</a>
+        <a href="notice.html" class="nav-link">공지</a>
+        <a href="calendar.html" class="nav-link">일정</a>
+      </div>
+      <div id="nav-auth" class="flex items-center gap-2"></div>
+    </div>
+  </div>
+</nav>
+
+<section class="relative overflow-hidden">
+  <div class="grid-bg absolute inset-0 -z-10"></div>
+
+  <div class="mx-auto max-w-screen-md px-5 pt-10 pb-20 sm:pt-14">
+
+    <div class="reveal-item mb-8 flex flex-wrap items-end justify-between gap-3">
+      <div>
+        <div class="mb-3 flex justify-start">
+          <span class="inline-flex items-center gap-2 rounded-full border border-border bg-surface/60 px-3 py-1 text-[11px] font-medium tracking-[0.18em] text-neon-purple uppercase">
+            <span class="h-1.5 w-1.5 rounded-full bg-neon-purple shadow-[0_0_8px_#b566ff]"></span>
+            Admin
+          </span>
+        </div>
+        <h1 class="text-2xl font-bold leading-tight tracking-tight text-foreground sm:text-3xl md:text-4xl">
+          순장 관리자 페이지
+        </h1>
+      </div>
+      <button id="excel-btn" type="button" class="inline-flex shrink-0 items-center gap-2 rounded-full bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue px-5 py-2.5 text-sm font-semibold text-background transition-transform hover:scale-[1.03]">
+        엑셀 다운로드
+      </button>
+    </div>
+
+    <!-- 출석체크 -->
+    <div class="neon-card reveal-item mb-6 p-5 sm:p-6">
+      <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <h2 class="text-base font-bold text-foreground sm:text-lg">출석체크</h2>
+        <div class="flex items-center gap-2">
+          <label class="text-xs text-muted-foreground">주일 날짜</label>
+          <input id="attend-date" type="date" class="date-field" />
+        </div>
+      </div>
+      <div id="attend-list"></div>
+      <button id="attend-save" type="button" class="mt-4 w-full rounded-full bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue px-5 py-2.5 text-sm font-semibold text-background transition-transform hover:scale-[1.02]">
+        저장
+      </button>
+      <p id="attend-saved-msg" class="mt-2 hidden text-center text-xs text-neon-blue">저장되었습니다</p>
+    </div>
+
+    <!-- 특이사항 -->
+    <div class="neon-card reveal-item mb-6 p-5 sm:p-6">
+      <h2 class="mb-4 text-base font-bold text-foreground sm:text-lg">특이사항 입력</h2>
+      <form id="note-form" class="space-y-3">
+        <div class="flex items-center gap-2">
+          <select id="note-target" class="select-field flex-1">
+            <option value="">순 전체 특이사항</option>
+          </select>
+        </div>
+        <textarea id="note-content" class="textarea-field" maxlength="2000" placeholder="특이사항을 입력해주세요"></textarea>
+        <button type="submit" class="w-full rounded-full bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue px-5 py-2.5 text-sm font-semibold text-background transition-transform hover:scale-[1.02]">등록</button>
+      </form>
+      <div id="note-list" class="mt-5"></div>
+    </div>
+
+    <!-- 순원 기도제목 -->
+    <div class="neon-card reveal-item mb-6 p-5 sm:p-6">
+      <h2 class="mb-1 text-base font-bold text-foreground sm:text-lg">순원 기도제목</h2>
+      <p class="mb-1 text-xs text-muted-foreground">순원들이 나눠준 기도제목이에요.</p>
+      <div id="prayer-list" class="mt-2"></div>
+    </div>
+
+    <!-- 순원 접속 비밀번호 관리 -->
+    <div class="neon-card reveal-item p-5 sm:p-6">
+      <h2 class="mb-1 text-base font-bold text-foreground sm:text-lg">순원 접속 비밀번호 관리</h2>
+      <p class="mb-3 text-xs text-muted-foreground">숫자 4자리로 설정해주세요. 순원은 이 비밀번호로만 로그인합니다.</p>
+      <div id="pin-list"></div>
+    </div>
+
+  </div>
+</section>
+
+<script>
+  var session = requireLeader();
+</script>
+<script>
+  if (session) {
+    var membersCache = [];
+
+    var attendState = {}; // member_id -> {sunday_worship, online_worship, department_meeting, soon_meeting}
+
+    var attendDateInput = document.getElementById('attend-date');
+    attendDateInput.value = getRecentSundayString();
+
+    function renderAttendList() {
+      var listEl = document.getElementById('attend-list');
+      listEl.innerHTML = membersCache.map(function (m) {
+        var st = attendState[m.id];
+        return (
+          '<div class="member-row" data-member-id="' + m.id + '">' +
+            '<div class="mb-2 flex items-center gap-2">' +
+              '<img src="' + memberAvatarUrl(m) + '" class="h-7 w-7 rounded-full object-cover" alt="" />' +
+              '<span class="text-sm font-semibold text-foreground">' + escapeHtml(m.name) + '</span>' +
+            '</div>' +
+            '<div class="grid grid-cols-1 gap-2 sm:grid-cols-3">' +
+              '<div>' +
+                '<div class="mb-1 text-[10px] font-medium text-muted-foreground">주일예배</div>' +
+                '<div class="flex gap-1.5" data-field="sunday_worship">' +
+                  '<button type="button" class="seg-btn present' + (st.sunday_worship === 'present' ? ' is-on' : '') + '" data-value="present">참석</button>' +
+                  '<button type="button" class="seg-btn absent' + (st.sunday_worship === 'absent' ? ' is-on' : '') + '" data-value="absent">불참</button>' +
+                '</div>' +
+                '<label class="online-check mt-1.5' + (st.sunday_worship === 'absent' ? '' : ' hidden') + '" data-field="online_worship_wrap">' +
+                  '<input type="checkbox" data-field="online_worship"' + (st.online_worship ? ' checked' : '') + ' /> 온라인 예배 드림' +
+                '</label>' +
+              '</div>' +
+              '<div>' +
+                '<div class="mb-1 text-[10px] font-medium text-muted-foreground">부서모임</div>' +
+                '<div class="flex gap-1.5" data-field="department_meeting">' +
+                  '<button type="button" class="seg-btn present' + (st.department_meeting === 'present' ? ' is-on' : '') + '" data-value="present">참석</button>' +
+                  '<button type="button" class="seg-btn absent' + (st.department_meeting === 'absent' ? ' is-on' : '') + '" data-value="absent">불참</button>' +
+                '</div>' +
+              '</div>' +
+              '<div>' +
+                '<div class="mb-1 text-[10px] font-medium text-muted-foreground">순모임</div>' +
+                '<div class="flex gap-1.5" data-field="soon_meeting">' +
+                  '<button type="button" class="seg-btn present' + (st.soon_meeting === 'present' ? ' is-on' : '') + '" data-value="present">참석</button>' +
+                  '<button type="button" class="seg-btn absent' + (st.soon_meeting === 'absent' ? ' is-on' : '') + '" data-value="absent">불참</button>' +
+                '</div>' +
+              '</div>' +
+            '</div>' +
+          '</div>'
+        );
+      }).join('');
+
+      listEl.querySelectorAll('.member-row').forEach(function (row) {
+        var memberId = Number(row.dataset.memberId);
+
+        row.querySelectorAll('[data-field="sunday_worship"] .seg-btn, [data-field="department_meeting"] .seg-btn, [data-field="soon_meeting"] .seg-btn').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            var field = btn.parentElement.dataset.field;
+            attendState[memberId][field] = btn.dataset.value;
+            if (field === 'sunday_worship' && btn.dataset.value === 'present') {
+              attendState[memberId].online_worship = false;
+            }
+            renderAttendList();
+          });
+        });
+
+        var onlineCheck = row.querySelector('[data-field="online_worship"]');
+        if (onlineCheck) {
+          onlineCheck.addEventListener('change', function () {
+            attendState[memberId].online_worship = onlineCheck.checked;
+          });
+        }
+      });
+    }
+
+    function loadAttendance() {
+      var serviceDate = attendDateInput.value;
+      sb.from('attendance').select('*').eq('service_date', serviceDate).then(function (res) {
+        var existing = {};
+        (res.data || []).forEach(function (r) { existing[r.member_id] = r; });
+
+        attendState = {};
+        membersCache.forEach(function (m) {
+          var r = existing[m.id];
+          attendState[m.id] = r
+            ? { sunday_worship: r.sunday_worship, online_worship: r.online_worship, department_meeting: r.department_meeting, soon_meeting: r.soon_meeting }
+            : { sunday_worship: 'absent', online_worship: false, department_meeting: 'absent', soon_meeting: 'absent' };
+        });
+
+        renderAttendList();
+      });
+    }
+
+    attendDateInput.addEventListener('change', loadAttendance);
+
+    document.getElementById('attend-save').addEventListener('click', function () {
+      var serviceDate = attendDateInput.value;
+      var rows = membersCache.map(function (m) {
+        var st = attendState[m.id];
+        return {
+          member_id: m.id,
+          service_date: serviceDate,
+          sunday_worship: st.sunday_worship,
+          online_worship: st.sunday_worship === 'absent' ? st.online_worship : false,
+          department_meeting: st.department_meeting,
+          soon_meeting: st.soon_meeting,
+          updated_at: new Date().toISOString()
+        };
+      });
+
+      var btn = document.getElementById('attend-save');
+      btn.disabled = true;
+
+      sb.from('attendance').upsert(rows, { onConflict: 'member_id,service_date' }).then(function (res) {
+        btn.disabled = false;
+        if (res.error) return;
+        var msg = document.getElementById('attend-saved-msg');
+        msg.classList.remove('hidden');
+        setTimeout(function () { msg.classList.add('hidden'); }, 2500);
+      });
+    });
+
+    // ---- 특이사항 ----
+    var noteForm = document.getElementById('note-form');
+    var noteTarget = document.getElementById('note-target');
+    var noteContent = document.getElementById('note-content');
+
+    function loadNotes() {
+      sb.from('special_notes').select('*').order('created_at', { ascending: false }).limit(30).then(function (res) {
+        var notes = res.data || [];
+        var memberById = {};
+        membersCache.forEach(function (m) { memberById[m.id] = m; });
+
+        var html = notes.map(function (n) {
+          var tag = n.member_id ? escapeHtml((memberById[n.member_id] || {}).name || '알 수 없음') : '순 전체';
+          return '<div class="border-t border-border/60 py-3 first:border-0">' +
+            '<div class="flex items-center justify-between gap-2">' +
+              '<span class="note-tag">' + tag + '</span>' +
+              '<span class="text-[11px] text-muted-foreground">' + formatDate(n.note_date) + '</span>' +
+            '</div>' +
+            '<p class="mt-1.5 whitespace-pre-wrap text-sm leading-relaxed text-foreground/85">' + escapeHtml(n.content) + '</p>' +
+          '</div>';
+        }).join('');
+
+        document.getElementById('note-list').innerHTML = html || '<p class="text-sm text-muted-foreground">등록된 특이사항이 없어요.</p>';
+      });
+    }
+
+    noteForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var content = noteContent.value.trim();
+      if (!content) return;
+
+      var memberId = noteTarget.value ? Number(noteTarget.value) : null;
+      var btn = noteForm.querySelector('button[type="submit"]');
+      btn.disabled = true;
+
+      sb.from('special_notes').insert({ member_id: memberId, content: content }).then(function (res) {
+        btn.disabled = false;
+        if (res.error) return;
+        noteContent.value = '';
+        loadNotes();
+      });
+    });
+
+    // ---- 순원 기도제목 ----
+    loadAndRenderPrayerList(document.getElementById('prayer-list'));
+
+    // ---- 비밀번호 관리 ----
+    function renderPinList() {
+      var html = membersCache.map(function (m) {
+        return '<div class="member-row flex items-center gap-3" data-member-id="' + m.id + '">' +
+          '<img src="' + memberAvatarUrl(m) + '" class="h-8 w-8 shrink-0 rounded-full object-cover" alt="" />' +
+          '<span class="w-16 shrink-0 text-sm font-medium text-foreground">' + escapeHtml(m.name) + '</span>' +
+          '<input type="text" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="••••" class="pin-field w-24" data-field="pin-input" />' +
+          '<button type="button" class="shrink-0 rounded-full border border-border px-3 py-1.5 text-xs font-semibold text-foreground transition-colors hover:border-neon-purple/50 hover:text-neon-purple" data-field="pin-save">저장</button>' +
+          '<span class="text-[11px] text-muted-foreground" data-field="pin-msg"></span>' +
+        '</div>';
+      }).join('');
+
+      var listEl = document.getElementById('pin-list');
+      listEl.innerHTML = html;
+
+      listEl.querySelectorAll('.member-row').forEach(function (row) {
+        var memberId = Number(row.dataset.memberId);
+        var input = row.querySelector('[data-field="pin-input"]');
+        var msg = row.querySelector('[data-field="pin-msg"]');
+
+        input.addEventListener('input', function () {
+          input.value = input.value.replace(/[^0-9]/g, '').slice(0, 4);
+        });
+
+        row.querySelector('[data-field="pin-save"]').addEventListener('click', function () {
+          var newPin = input.value;
+          if (newPin.length !== 4) {
+            msg.textContent = '4자리 숫자를 입력해주세요';
+            msg.style.color = '#ff5f6d';
+            return;
+          }
+          sb.rpc('admin_set_pin', { p_admin_pin: session.pin, p_member_id: memberId, p_new_pin: newPin }).then(function (res) {
+            if (res.error || res.data !== true) {
+              msg.textContent = '저장 실패';
+              msg.style.color = '#ff5f6d';
+              return;
+            }
+            msg.textContent = '저장됨';
+            msg.style.color = '#5ee0a8';
+            input.value = '';
+          });
+        });
+      });
+    }
+
+    // ---- 엑셀 다운로드 ----
+    document.getElementById('excel-btn').addEventListener('click', function () {
+      Promise.all([
+        sb.from('attendance').select('*').order('service_date', { ascending: true }),
+        sb.from('special_notes').select('*').order('created_at', { ascending: true }),
+        sb.from('prayer_requests').select('*')
+      ]).then(function (results) {
+        var memberById = {};
+        membersCache.forEach(function (m) { memberById[m.id] = m; });
+
+        var attendanceRows = (results[0].data || []).map(function (r) {
+          return {
+            '날짜': r.service_date,
+            '이름': (memberById[r.member_id] || {}).name || '',
+            '주일예배': r.sunday_worship === 'present' ? '참석' : (r.online_worship ? '온라인예배' : '결석'),
+            '부서모임': r.department_meeting === 'present' ? '참석' : '결석',
+            '순모임': r.soon_meeting === 'present' ? '참석' : '결석'
+          };
+        });
+
+        var noteRows = (results[1].data || []).map(function (n) {
+          return {
+            '날짜': n.note_date,
+            '대상': n.member_id ? ((memberById[n.member_id] || {}).name || '') : '순 전체',
+            '내용': n.content
+          };
+        });
+
+        var prayerRows = (results[2].data || []).map(function (p) {
+          return {
+            '이름': (memberById[p.member_id] || {}).name || '',
+            '기도제목': p.content,
+            '업데이트': formatDate(p.updated_at)
+          };
+        });
+
+        var wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(attendanceRows), '출석');
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(noteRows), '특이사항');
+        XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(prayerRows), '기도제목');
+
+        var todayStr = getKstDateStringForFile();
+        XLSX.writeFile(wb, '이종환순_' + todayStr + '.xlsx');
+      });
+    });
+
+    function getKstDateStringForFile() {
+      var t = getKstToday();
+      function pad(n) { return String(n).padStart(2, '0'); }
+      return t.y + pad(t.m + 1) + pad(t.d);
+    }
+
+    // ---- 초기 로드 ----
+    sb.from('members_public').select('*').then(function (res) {
+      membersCache = res.data || [];
+
+      noteTarget.innerHTML = '<option value="">순 전체 특이사항</option>' +
+        membersCache.map(function (m) { return '<option value="' + m.id + '">' + escapeHtml(m.name) + '</option>'; }).join('');
+
+      loadAttendance();
+      loadNotes();
+      renderPinList();
+    });
+  }
+
+  var items = document.querySelectorAll('.reveal-item');
+  items.forEach(function (el) { el.classList.add('revealed'); });
+</script>
+
+</body>
+</html>

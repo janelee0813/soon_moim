@@ -1,0 +1,140 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0%25' stop-color='%23b566ff'/><stop offset='50%25' stop-color='%23ff5fb0'/><stop offset='100%25' stop-color='%235ec8ff'/></linearGradient></defs><rect width='32' height='32' rx='7' ry='7' fill='url(%23g)'/></svg>" />
+<title>로그인 - 분당우리교회 4청년부 이종환 순</title>
+
+<link rel="preconnect" href="https://cdn.jsdelivr.net" />
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="assets/tailwind-config.js"></script>
+<link rel="stylesheet" href="assets/theme.css" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/supabase-client.js"></script>
+<script src="assets/app.js"></script>
+<style>
+  .pin-input {
+    width: 100%;
+    text-align: center;
+    letter-spacing: 0.6em;
+    font-size: 28px;
+    font-weight: 700;
+    border-radius: 0.75rem;
+    border: 1px solid rgba(140,110,200,0.28);
+    background: rgba(10,6,18,0.5);
+    color: #f5f1ff;
+    padding: 14px 12px 14px 24px;
+    outline: none;
+  }
+  .pin-input:focus { border-color: rgba(181,102,255,0.6); }
+</style>
+</head>
+<body class="bg-background text-foreground">
+
+<nav class="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur-sm">
+  <div class="mx-auto max-w-screen-md px-5">
+    <div class="flex items-center justify-between gap-2 py-3">
+      <div class="flex items-center gap-2">
+        <a href="index.html" class="nav-link">홈</a>
+        <a href="notice.html" class="nav-link">공지</a>
+        <a href="calendar.html" class="nav-link">일정</a>
+      </div>
+      <div id="nav-auth" class="flex items-center gap-2"></div>
+    </div>
+  </div>
+</nav>
+
+<section class="relative overflow-hidden">
+  <div class="grid-bg absolute inset-0 -z-10"></div>
+
+  <div class="mx-auto max-w-screen-md px-5 pt-16 pb-20 sm:pt-24">
+
+    <div class="neon-card reveal-item mx-auto max-w-sm p-6 sm:p-8">
+      <div class="mb-1 text-center text-[11px] font-semibold uppercase tracking-[0.2em] text-neon-purple">
+        이종환 순
+      </div>
+      <h1 class="mb-6 text-center text-xl font-bold text-foreground">
+        접속 비밀번호 입력
+      </h1>
+
+      <form id="login-form">
+        <input
+          id="pin-input"
+          class="pin-input"
+          type="password"
+          inputmode="numeric"
+          pattern="[0-9]*"
+          maxlength="4"
+          autocomplete="off"
+          placeholder="••••"
+          required
+        />
+        <div id="login-error" class="mt-3 hidden text-center text-sm text-[#ff5f6d]">
+          비밀번호가 일치하지 않아요. 다시 확인해주세요.
+        </div>
+        <button
+          type="submit"
+          class="mt-6 w-full rounded-full bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue px-6 py-3 text-sm font-semibold text-background shadow-[0_10px_40px_-10px_rgba(181,102,255,0.7)] transition-transform hover:scale-[1.02]"
+        >
+          로그인
+        </button>
+      </form>
+
+      <p class="mt-5 text-center text-xs leading-relaxed text-muted-foreground">
+        본인의 4자리 접속 비밀번호를 입력하면 자동으로 본인 계정으로 접속됩니다.<br />
+        비밀번호를 모르신다면 순장(이종환)에게 문의해주세요.
+      </p>
+    </div>
+
+  </div>
+</section>
+
+<script>
+  var form = document.getElementById('login-form');
+  var pinInput = document.getElementById('pin-input');
+  var errorEl = document.getElementById('login-error');
+
+  pinInput.addEventListener('input', function () {
+    pinInput.value = pinInput.value.replace(/[^0-9]/g, '').slice(0, 4);
+    errorEl.classList.add('hidden');
+  });
+
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var pin = pinInput.value;
+    if (pin.length !== 4) return;
+
+    var submitBtn = form.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
+
+    sb.rpc('login_with_pin', { p_pin: pin }).then(function (res) {
+      submitBtn.disabled = false;
+
+      if (res.error || !res.data || res.data.length === 0) {
+        errorEl.classList.remove('hidden');
+        pinInput.value = '';
+        pinInput.focus();
+        return;
+      }
+
+      var member = res.data[0];
+      setSession({ id: member.id, name: member.name, role: member.role, pin: pin });
+
+      window.location.href = member.role === 'leader' ? 'admin.html' : 'mypage.html';
+    });
+  });
+
+  // 이미 로그인되어 있으면 바로 이동
+  var existing = getSession();
+  if (existing) {
+    window.location.href = existing.role === 'leader' ? 'admin.html' : 'mypage.html';
+  }
+
+  var items = document.querySelectorAll('.reveal-item');
+  items.forEach(function (el) { el.classList.add('revealed'); });
+</script>
+
+</body>
+</html>

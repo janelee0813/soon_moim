@@ -13,6 +13,8 @@
 <script src="assets/tailwind-config.js"></script>
 <link rel="stylesheet" href="assets/theme.css" />
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/supabase-client.js"></script>
+<script src="assets/app.js"></script>
 <style>
   .like-btn {
     display: inline-flex;
@@ -49,10 +51,13 @@
 
 <nav class="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur-sm">
   <div class="mx-auto max-w-screen-md px-5">
-    <div class="flex items-center gap-2 py-3">
-      <a href="index.html" class="nav-link">홈</a>
-      <a href="notice.html" class="nav-link is-active">공지</a>
-      <a href="calendar.html" class="nav-link">일정</a>
+    <div class="flex items-center justify-between gap-2 py-3">
+      <div class="flex items-center gap-2">
+        <a href="index.html" class="nav-link">홈</a>
+        <a href="notice.html" class="nav-link is-active">공지</a>
+        <a href="calendar.html" class="nav-link">일정</a>
+      </div>
+      <div id="nav-auth" class="flex items-center gap-2"></div>
     </div>
   </div>
 </nav>
@@ -86,10 +91,6 @@
 </section>
 
 <script>
-  var SUPABASE_URL = 'https://pzvhxebgpmqpuagwcrqo.supabase.co';
-  var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB6dmh4ZWJncG1xcHVhZ3djcnFvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc0MTA4OTYsImV4cCI6MjEwMjk4Njg5Nn0.Rry5xZIMJeScdWWZ3fJDayMHs4-cjk7o5CJox7QtBxY';
-  var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
   function getVisitorId() {
     var key = 'soon_moim_visitor_id';
     var id = localStorage.getItem(key);
@@ -101,20 +102,6 @@
   }
 
   var visitorId = getVisitorId();
-
-  function escapeHtml(str) {
-    var div = document.createElement('div');
-    div.textContent = str == null ? '' : String(str);
-    return div.innerHTML;
-  }
-
-  function formatDate(iso) {
-    var d = new Date(iso);
-    var y = d.getFullYear();
-    var m = String(d.getMonth() + 1).padStart(2, '0');
-    var day = String(d.getDate()).padStart(2, '0');
-    return y + '.' + m + '.' + day;
-  }
 
   var listEl = document.getElementById('post-list');
   var emptyEl = document.getElementById('empty-state');

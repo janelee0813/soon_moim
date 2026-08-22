@@ -12,15 +12,19 @@
 <script src="https://cdn.tailwindcss.com"></script>
 <script src="assets/tailwind-config.js"></script>
 <link rel="stylesheet" href="assets/theme.css" />
+<script src="assets/app.js"></script>
 </head>
 <body class="bg-background text-foreground">
 
 <nav class="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur-sm">
   <div class="mx-auto max-w-screen-md px-5">
-    <div class="flex items-center gap-2 py-3">
-      <a href="index.html" class="nav-link is-active">홈</a>
-      <a href="notice.html" class="nav-link">공지</a>
-      <a href="calendar.html" class="nav-link">일정</a>
+    <div class="flex items-center justify-between gap-2 py-3">
+      <div class="flex items-center gap-2">
+        <a href="index.html" class="nav-link is-active">홈</a>
+        <a href="notice.html" class="nav-link">공지</a>
+        <a href="calendar.html" class="nav-link">일정</a>
+      </div>
+      <div id="nav-auth" class="flex items-center gap-2"></div>
     </div>
   </div>
 </nav>
@@ -45,7 +49,7 @@
       <a id="meditation-btn" href="https://www.woorichurch.org/modu/ov/ov_meditation.asp" target="_blank" rel="noopener" class="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue px-6 py-3 text-sm font-semibold text-background shadow-[0_10px_40px_-10px_rgba(181,102,255,0.7)] transition-transform hover:scale-[1.03]">
         한 구절 묵상 바로가기
       </a>
-      <a href="#" class="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue px-6 py-3 text-sm font-semibold text-background shadow-[0_10px_40px_-10px_rgba(181,102,255,0.7)] transition-transform hover:scale-[1.03]">
+      <a href="mypage.html" class="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue px-6 py-3 text-sm font-semibold text-background shadow-[0_10px_40px_-10px_rgba(181,102,255,0.7)] transition-transform hover:scale-[1.03]">
         MY PAGE
       </a>
     </div>
