@@ -140,6 +140,18 @@
       <div id="note-list" class="mt-5"></div>
     </div>
 
+    <!-- 나의 기도제목 입력 -->
+    <div class="neon-card reveal-item mb-6 p-5 sm:p-6">
+      <h2 class="mb-3 text-base font-bold text-foreground sm:text-lg">나의 기도제목</h2>
+      <form id="prayer-form">
+        <textarea id="prayer-content" class="textarea-field" maxlength="1000" placeholder="이번 주 기도제목을 나눠주세요"></textarea>
+        <div class="mt-3 flex items-center justify-between gap-3">
+          <span id="prayer-saved-at" class="text-[11px] text-muted-foreground"></span>
+          <button type="submit" class="rounded-full bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue px-5 py-2 text-sm font-semibold text-background transition-transform hover:scale-[1.03]">저장</button>
+        </div>
+      </form>
+    </div>
+
     <!-- 순원 기도제목 -->
     <div class="neon-card reveal-item mb-6 p-5 sm:p-6">
       <h2 class="mb-1 text-base font-bold text-foreground sm:text-lg">순원 기도제목</h2>
@@ -320,6 +332,37 @@
         noteContent.value = '';
         loadNotes();
       });
+    });
+
+    // ---- 나의 기도제목 입력 ----
+    var prayerForm = document.getElementById('prayer-form');
+    var prayerContent = document.getElementById('prayer-content');
+    var prayerSavedAt = document.getElementById('prayer-saved-at');
+
+    sb.from('prayer_requests').select('*').eq('member_id', session.id).maybeSingle().then(function (res) {
+      if (res.data) {
+        prayerContent.value = res.data.content;
+        prayerSavedAt.textContent = '마지막 저장: ' + formatDate(res.data.updated_at);
+      }
+    });
+
+    prayerForm.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var content = prayerContent.value.trim();
+      if (!content) return;
+
+      var btn = prayerForm.querySelector('button[type="submit"]');
+      btn.disabled = true;
+
+      sb.from('prayer_requests')
+        .upsert({ member_id: session.id, content: content, updated_at: new Date().toISOString() }, { onConflict: 'member_id' })
+        .select()
+        .then(function (res) {
+          btn.disabled = false;
+          if (res.error) return;
+          prayerSavedAt.textContent = '저장되었습니다';
+          loadAndRenderPrayerList(document.getElementById('prayer-list'));
+        });
     });
 
     // ---- 순원 기도제목 ----
