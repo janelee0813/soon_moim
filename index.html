@@ -169,21 +169,29 @@
 
 <script>
   var members = [
-    "김민준", "이서연", "박도현", "최지우", "정하은",
-    "강태윤", "윤소율", "임현우", "한지민", "오세훈"
+    { name: "이종환", avatar: "assets/members/leader.png" },
+    { name: "김민준" }, { name: "이서연" }, { name: "박도현" }, { name: "최지우" },
+    { name: "정하은" }, { name: "강태윤" }, { name: "윤소율" }, { name: "임현우" },
+    { name: "한지민" }
   ];
 
+  var AVATAR_BG = 'f9e7cb';
+
   var grid = document.getElementById('member-grid');
-  members.forEach(function (name, i) {
+  members.forEach(function (member, i) {
     var wrap = document.createElement('div');
     wrap.className = 'reveal-item flex flex-col items-center gap-3';
     wrap.dataset.delay = String(i * 80);
 
+    var avatarSrc = member.avatar
+      ? member.avatar
+      : 'https://api.dicebear.com/7.x/personas/svg?seed=' + encodeURIComponent(member.name + i) + '&backgroundColor=' + AVATAR_BG;
+
     wrap.innerHTML =
       '<div class="neon-card avatar-box w-full rounded-2xl">' +
-        '<img src="https://api.dicebear.com/7.x/adventurer/svg?seed=' + encodeURIComponent(name + i) + '&backgroundColor=1c1530,15101f,1a1428" alt="' + name + '" loading="lazy" />' +
+        '<img src="' + avatarSrc + '" alt="' + member.name + '" loading="lazy" />' +
       '</div>' +
-      '<span class="text-sm font-medium text-foreground/90">' + name + '</span>';
+      '<span class="text-sm font-medium text-foreground/90">' + member.name + '</span>';
 
     grid.appendChild(wrap);
   });
