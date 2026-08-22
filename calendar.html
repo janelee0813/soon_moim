@@ -28,6 +28,12 @@
   }
   .sched-date .month { font-size: 11px; font-weight: 600; color: #9b94b3; }
   .sched-date .day { font-size: 22px; font-weight: 700; color: #b566ff; line-height: 1.15; }
+  .sched-date.is-tbd {
+    border-style: dashed;
+    border-color: rgba(140,110,200,0.4);
+    background: transparent;
+  }
+  .sched-date.is-tbd .tbd-label { font-size: 12px; font-weight: 700; color: #9b94b3; }
 </style>
 </head>
 <body class="bg-background text-foreground">
@@ -67,6 +73,13 @@
 
     <div class="neon-card reveal-item divide-y divide-border/60 p-5 sm:p-6" id="sched-list"></div>
 
+    <div class="reveal-item mb-3 mt-10">
+      <h2 class="text-lg font-bold tracking-tight text-foreground sm:text-xl">다가올 일정</h2>
+      <p class="mt-1 text-xs text-muted-foreground sm:text-sm">날짜는 추후 확정되는 대로 안내드릴게요.</p>
+    </div>
+
+    <div class="neon-card reveal-item divide-y divide-border/60 p-5 sm:p-6" id="sched-tbd-list"></div>
+
   </div>
 </section>
 
@@ -77,6 +90,12 @@
     { month: 10, day: 25, weekday: '주일', title: '새생명 축제 연계' },
     { month: 11, day: 29, weekday: '주일', title: '마을별 스페셜데이' },
     { month: 12, day: 27, weekday: '주일', title: '하반기 종강 및 마무리' }
+  ];
+
+  var UPCOMING = [
+    { title: '가을수련회 (원데이 말씀사경회)' },
+    { title: '1:1 양육훈련' },
+    { title: '하반기 마을훈련' }
   ];
 
   var listEl = document.getElementById('sched-list');
@@ -90,6 +109,22 @@
         '</div>' +
         '<div class="min-w-0">' +
           '<div class="text-[11px] font-medium text-muted-foreground">' + item.weekday + '</div>' +
+          '<div class="text-base font-semibold leading-snug text-foreground">' + item.title + '</div>' +
+        '</div>' +
+      '</div>'
+    );
+  }).join('');
+
+  var tbdListEl = document.getElementById('sched-tbd-list');
+
+  tbdListEl.innerHTML = UPCOMING.map(function (item) {
+    return (
+      '<div class="flex items-center gap-4 py-4 first:pt-0 last:pb-0">' +
+        '<div class="sched-date is-tbd">' +
+          '<span class="tbd-label">미정</span>' +
+        '</div>' +
+        '<div class="min-w-0">' +
+          '<div class="text-[11px] font-medium text-muted-foreground">날짜 미정</div>' +
           '<div class="text-base font-semibold leading-snug text-foreground">' + item.title + '</div>' +
         '</div>' +
       '</div>'
