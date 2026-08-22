@@ -1,0 +1,270 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0%25' stop-color='%23b566ff'/><stop offset='50%25' stop-color='%23ff5fb0'/><stop offset='100%25' stop-color='%235ec8ff'/></linearGradient></defs><rect width='32' height='32' rx='7' ry='7' fill='url(%23g)'/></svg>" />
+<title>공지 - 분당우리교회 4청년부 이종환 순</title>
+<meta name="description" content="분당우리교회 4청년부 이종환 순 공지사항" />
+
+<link rel="preconnect" href="https://cdn.jsdelivr.net" />
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="assets/tailwind-config.js"></script>
+<link rel="stylesheet" href="assets/theme.css" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  .like-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border-radius: 9999px;
+    border: 1px solid rgba(140,110,200,0.28);
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #9b94b3;
+    transition: all .15s ease;
+  }
+  .like-btn:hover { border-color: rgba(255,95,176,0.5); }
+  .like-btn.is-liked {
+    border-color: rgba(255,95,176,0.6);
+    color: #ff5fb0;
+    background: rgba(255,95,176,0.12);
+  }
+  .comment-input {
+    width: 100%;
+    border-radius: 0.75rem;
+    border: 1px solid rgba(140,110,200,0.28);
+    background: rgba(10,6,18,0.5);
+    color: #f5f1ff;
+    padding: 10px 12px;
+    font-size: 13px;
+    outline: none;
+  }
+  .comment-input::placeholder { color: #6b6480; }
+</style>
+</head>
+<body class="bg-background text-foreground">
+
+<nav class="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur-sm">
+  <div class="mx-auto max-w-screen-md px-5">
+    <div class="flex items-center gap-2 py-3">
+      <a href="index.html" class="nav-link">홈</a>
+      <a href="notice.html" class="nav-link is-active">공지</a>
+      <a href="calendar.html" class="nav-link">일정</a>
+    </div>
+  </div>
+</nav>
+
+<section class="relative overflow-hidden">
+  <div class="grid-bg absolute inset-0 -z-10"></div>
+
+  <div class="mx-auto max-w-screen-md px-5 pt-10 pb-16 sm:pt-14 sm:pb-20">
+
+    <div class="reveal-item mb-8">
+      <div class="mb-3 flex justify-start">
+        <span class="inline-flex items-center gap-2 rounded-full border border-border bg-surface/60 px-3 py-1 text-[11px] font-medium tracking-[0.18em] text-neon-purple uppercase">
+          <span class="h-1.5 w-1.5 rounded-full bg-neon-purple shadow-[0_0_8px_#b566ff]"></span>
+          Notice
+        </span>
+      </div>
+      <h1 class="text-2xl font-bold leading-tight tracking-tight text-foreground sm:text-3xl md:text-4xl">
+        공지
+      </h1>
+      <p class="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
+        이종환 순의 소식을 확인하고, 댓글과 좋아요를 남겨보세요.
+      </p>
+    </div>
+
+    <div id="post-list" class="space-y-5"></div>
+    <div id="empty-state" class="reveal-item hidden text-center text-sm text-muted-foreground py-12">
+      아직 등록된 공지가 없어요.
+    </div>
+
+  </div>
+</section>
+
+<script>
+  var SUPABASE_URL = 'https://pzvhxebgpmqpuagwcrqo.supabase.co';
+  var SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InB6dmh4ZWJncG1xcHVhZ3djcnFvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODc0MTA4OTYsImV4cCI6MjEwMjk4Njg5Nn0.Rry5xZIMJeScdWWZ3fJDayMHs4-cjk7o5CJox7QtBxY';
+  var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+  function getVisitorId() {
+    var key = 'soon_moim_visitor_id';
+    var id = localStorage.getItem(key);
+    if (!id) {
+      id = (crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random().toString(16).slice(2));
+      localStorage.setItem(key, id);
+    }
+    return id;
+  }
+
+  var visitorId = getVisitorId();
+
+  function escapeHtml(str) {
+    var div = document.createElement('div');
+    div.textContent = str == null ? '' : String(str);
+    return div.innerHTML;
+  }
+
+  function formatDate(iso) {
+    var d = new Date(iso);
+    var y = d.getFullYear();
+    var m = String(d.getMonth() + 1).padStart(2, '0');
+    var day = String(d.getDate()).padStart(2, '0');
+    return y + '.' + m + '.' + day;
+  }
+
+  var listEl = document.getElementById('post-list');
+  var emptyEl = document.getElementById('empty-state');
+
+  function renderPost(post, likeCount, likedByMe, comments) {
+    var wrap = document.createElement('article');
+    wrap.className = 'neon-card reveal-item p-5 sm:p-6';
+    wrap.dataset.postId = post.id;
+
+    var commentsHtml = comments.map(function (c) {
+      return '<div class="border-t border-border/60 pt-3 mt-3 first:mt-0 first:border-0 first:pt-0">' +
+        '<div class="flex items-baseline justify-between gap-2">' +
+          '<span class="text-sm font-semibold text-foreground/90">' + escapeHtml(c.author_name) + '</span>' +
+          '<span class="text-[11px] text-muted-foreground">' + formatDate(c.created_at) + '</span>' +
+        '</div>' +
+        '<p class="mt-1 text-sm leading-relaxed text-foreground/80">' + escapeHtml(c.content) + '</p>' +
+      '</div>';
+    }).join('');
+
+    wrap.innerHTML =
+      '<div class="flex items-start justify-between gap-3">' +
+        '<h2 class="text-lg font-bold text-foreground sm:text-xl">' + escapeHtml(post.title) + '</h2>' +
+        '<span class="shrink-0 text-[11px] text-muted-foreground">' + formatDate(post.created_at) + '</span>' +
+      '</div>' +
+      '<p class="mt-3 text-sm leading-relaxed text-foreground/85 whitespace-pre-wrap">' + escapeHtml(post.content) + '</p>' +
+      '<div class="mt-4 flex items-center gap-2">' +
+        '<button type="button" class="like-btn' + (likedByMe ? ' is-liked' : '') + '" data-action="like">' +
+          '<svg class="h-3.5 w-3.5" viewBox="0 0 24 24" fill="' + (likedByMe ? 'currentColor' : 'none') + '" stroke="currentColor" stroke-width="2"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/></svg>' +
+          '<span data-role="like-count">' + likeCount + '</span>' +
+        '</button>' +
+        '<span class="text-[13px] text-muted-foreground">댓글 <span data-role="comment-count">' + comments.length + '</span>개</span>' +
+      '</div>' +
+      '<div class="mt-5 border-t border-border pt-4">' +
+        '<div data-role="comment-list">' + commentsHtml + '</div>' +
+        '<form data-role="comment-form" class="mt-4 flex flex-col gap-2 sm:flex-row">' +
+          '<input type="text" name="author" maxlength="30" required placeholder="이름" class="comment-input sm:w-28" />' +
+          '<input type="text" name="content" maxlength="500" required placeholder="댓글을 남겨보세요" class="comment-input flex-1" />' +
+          '<button type="submit" class="shrink-0 rounded-full bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue px-4 py-2 text-sm font-semibold text-background transition-transform hover:scale-[1.03]">등록</button>' +
+        '</form>' +
+      '</div>';
+
+    var likeBtn = wrap.querySelector('[data-action="like"]');
+    likeBtn.addEventListener('click', function () { toggleLike(post.id, likeBtn); });
+
+    var form = wrap.querySelector('[data-role="comment-form"]');
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var author = form.author.value.trim();
+      var content = form.content.value.trim();
+      if (!author || !content) return;
+      submitComment(post.id, author, content, wrap);
+    });
+
+    return wrap;
+  }
+
+  function toggleLike(postId, likeBtn) {
+    var isLiked = likeBtn.classList.contains('is-liked');
+    var countEl = likeBtn.querySelector('[data-role="like-count"]');
+    var count = Number(countEl.textContent);
+
+    likeBtn.disabled = true;
+
+    var action = isLiked
+      ? sb.from('notice_likes').delete().eq('post_id', postId).eq('visitor_id', visitorId)
+      : sb.from('notice_likes').insert({ post_id: postId, visitor_id: visitorId });
+
+    action.then(function (res) {
+      if (res.error) { likeBtn.disabled = false; return; }
+      likeBtn.classList.toggle('is-liked', !isLiked);
+      countEl.textContent = String(count + (isLiked ? -1 : 1));
+      likeBtn.querySelector('svg').setAttribute('fill', isLiked ? 'none' : 'currentColor');
+      likeBtn.disabled = false;
+    });
+  }
+
+  function submitComment(postId, author, content, wrap) {
+    sb.from('notice_comments')
+      .insert({ post_id: postId, author_name: author, content: content })
+      .select()
+      .then(function (res) {
+        if (res.error || !res.data || !res.data[0]) return;
+        var c = res.data[0];
+        var listRoot = wrap.querySelector('[data-role="comment-list"]');
+        var item = document.createElement('div');
+        item.className = 'border-t border-border/60 pt-3 mt-3 first:mt-0 first:border-0 first:pt-0';
+        item.innerHTML =
+          '<div class="flex items-baseline justify-between gap-2">' +
+            '<span class="text-sm font-semibold text-foreground/90">' + escapeHtml(c.author_name) + '</span>' +
+            '<span class="text-[11px] text-muted-foreground">' + formatDate(c.created_at) + '</span>' +
+          '</div>' +
+          '<p class="mt-1 text-sm leading-relaxed text-foreground/80">' + escapeHtml(c.content) + '</p>';
+        listRoot.appendChild(item);
+
+        var countEl = wrap.querySelector('[data-role="comment-count"]');
+        countEl.textContent = String(Number(countEl.textContent) + 1);
+
+        var form = wrap.querySelector('[data-role="comment-form"]');
+        form.reset();
+      });
+  }
+
+  function loadPosts() {
+    sb.from('notice_posts')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .then(function (postsRes) {
+        var posts = postsRes.data || [];
+        if (posts.length === 0) {
+          emptyEl.classList.remove('hidden');
+          emptyEl.classList.add('revealed');
+          return;
+        }
+
+        var postIds = posts.map(function (p) { return p.id; });
+
+        Promise.all([
+          sb.from('notice_comments').select('*').in('post_id', postIds).order('created_at', { ascending: true }),
+          sb.from('notice_likes').select('post_id, visitor_id').in('post_id', postIds)
+        ]).then(function (results) {
+          var comments = results[0].data || [];
+          var likes = results[1].data || [];
+
+          posts.forEach(function (post, i) {
+            var postComments = comments.filter(function (c) { return c.post_id === post.id; });
+            var postLikes = likes.filter(function (l) { return l.post_id === post.id; });
+            var likedByMe = postLikes.some(function (l) { return l.visitor_id === visitorId; });
+
+            var el = renderPost(post, postLikes.length, likedByMe, postComments);
+            el.dataset.delay = String(i * 80);
+            listEl.appendChild(el);
+          });
+
+          var items = document.querySelectorAll('.reveal-item');
+          var obs = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+              if (entry.isIntersecting) {
+                var delay = Number(entry.target.dataset.delay || 0);
+                setTimeout(function () { entry.target.classList.add('revealed'); }, delay);
+                obs.unobserve(entry.target);
+              }
+            });
+          }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+          items.forEach(function (el) { obs.observe(el); });
+        });
+      });
+  }
+
+  loadPosts();
+</script>
+
+</body>
+</html>

@@ -10,90 +10,20 @@
 <link rel="preconnect" href="https://cdn.jsdelivr.net" />
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
 <script src="https://cdn.tailwindcss.com"></script>
-<script>
-  tailwind.config = {
-    theme: {
-      extend: {
-        fontFamily: {
-          sans: ['Pretendard Variable', 'Pretendard', '-apple-system', 'BlinkMacSystemFont', 'Apple SD Gothic Neo', 'Segoe UI', 'Roboto', 'sans-serif']
-        },
-        colors: {
-          background: '#0a0612',
-          surface: '#15101f',
-          'surface-elevated': '#1c1530',
-          foreground: '#f5f1ff',
-          muted: '#1a1428',
-          'muted-foreground': '#9b94b3',
-          border: 'rgba(140,110,200,0.22)',
-          'neon-purple': '#b566ff',
-          'neon-pink': '#ff5fb0',
-          'neon-blue': '#5ec8ff'
-        },
-        animation: {
-          'fade-up': 'fade-up 0.7s cubic-bezier(0.22,1,0.36,1) both',
-          'glow-pulse': 'glow-pulse 3s ease-in-out infinite',
-          'shimmer': 'shimmer 6s linear infinite'
-        },
-        keyframes: {
-          'fade-up': { '0%': { opacity: 0, transform: 'translateY(24px)' }, '100%': { opacity: 1, transform: 'translateY(0)' } },
-          'glow-pulse': { '0%,100%': { boxShadow: '0 0 20px -8px rgba(181,102,255,0.5)' }, '50%': { boxShadow: '0 0 35px -4px rgba(181,102,255,0.85)' } },
-          'shimmer': { '0%': { backgroundPosition: '0% 50%' }, '100%': { backgroundPosition: '200% 50%' } }
-        }
-      }
-    }
-  };
-</script>
-
-<style>
-  html { scroll-behavior: smooth; background: #0a0612; color-scheme: dark; }
-  body { background: #0a0612; color: #f5f1ff; font-family: 'Pretendard Variable', 'Pretendard', -apple-system, sans-serif; -webkit-font-smoothing: antialiased; }
-  ::selection { background: rgba(181,102,255,0.35); }
-
-  .grid-bg {
-    background-image:
-      radial-gradient(circle at 20% 0%, rgba(181,102,255,0.18), transparent 45%),
-      radial-gradient(circle at 80% 10%, rgba(255,95,176,0.14), transparent 50%),
-      radial-gradient(circle at 50% 100%, rgba(94,200,255,0.12), transparent 55%);
-  }
-  .divider-neon {
-    height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(181,102,255,0.6), rgba(255,95,176,0.5), transparent);
-  }
-  .neon-card {
-    position: relative;
-    background: linear-gradient(180deg, rgba(28,21,48,0.85), rgba(21,16,31,0.7));
-    border: 1px solid rgba(140,110,200,0.28);
-    backdrop-filter: blur(8px);
-    border-radius: 1rem;
-    transition: transform .3s ease, box-shadow .3s ease;
-  }
-  .neon-card:hover { transform: translateY(-2px); box-shadow: 0 10px 40px -15px rgba(181,102,255,0.5); }
-
-  .text-gradient-neon {
-    background: linear-gradient(100deg, #b566ff 0%, #ff5fb0 50%, #5ec8ff 100%);
-    background-size: 200% auto;
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    animation: shimmer 6s linear infinite;
-  }
-
-  /* 프로필/섹션 스크롤 리빌 효과 */
-  .reveal-item {
-    opacity: 0;
-    transform: translateY(24px);
-    transition: opacity .7s cubic-bezier(0.22,1,0.36,1), transform .7s cubic-bezier(0.22,1,0.36,1);
-  }
-  .reveal-item.revealed { opacity: 1; transform: translateY(0); }
-
-  .avatar-box {
-    aspect-ratio: 1 / 1;
-    overflow: hidden;
-  }
-  .avatar-box img { width: 100%; height: 100%; object-fit: cover; display: block; }
-</style>
+<script src="assets/tailwind-config.js"></script>
+<link rel="stylesheet" href="assets/theme.css" />
 </head>
 <body class="bg-background text-foreground">
+
+<nav class="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur-sm">
+  <div class="mx-auto max-w-screen-md px-5">
+    <div class="flex items-center gap-2 py-3">
+      <a href="index.html" class="nav-link is-active">홈</a>
+      <a href="notice.html" class="nav-link">공지</a>
+      <a href="calendar.html" class="nav-link">일정</a>
+    </div>
+  </div>
+</nav>
 
 <!-- HERO -->
 <section class="relative overflow-hidden">

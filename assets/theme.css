@@ -1,0 +1,68 @@
+html { scroll-behavior: smooth; background: #0a0612; color-scheme: dark; }
+body { background: #0a0612; color: #f5f1ff; font-family: 'Pretendard Variable', 'Pretendard', -apple-system, sans-serif; -webkit-font-smoothing: antialiased; }
+::selection { background: rgba(181,102,255,0.35); }
+
+.grid-bg {
+  background-image:
+    radial-gradient(circle at 20% 0%, rgba(181,102,255,0.18), transparent 45%),
+    radial-gradient(circle at 80% 10%, rgba(255,95,176,0.14), transparent 50%),
+    radial-gradient(circle at 50% 100%, rgba(94,200,255,0.12), transparent 55%);
+}
+.divider-neon {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(181,102,255,0.6), rgba(255,95,176,0.5), transparent);
+}
+.neon-card {
+  position: relative;
+  background: linear-gradient(180deg, rgba(28,21,48,0.85), rgba(21,16,31,0.7));
+  border: 1px solid rgba(140,110,200,0.28);
+  backdrop-filter: blur(8px);
+  border-radius: 1rem;
+  transition: transform .3s ease, box-shadow .3s ease;
+}
+.neon-card:hover { transform: translateY(-2px); box-shadow: 0 10px 40px -15px rgba(181,102,255,0.5); }
+
+.text-gradient-neon {
+  background: linear-gradient(100deg, #b566ff 0%, #ff5fb0 50%, #5ec8ff 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shimmer 6s linear infinite;
+}
+
+/* 스크롤 리빌 효과 */
+.reveal-item {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity .7s cubic-bezier(0.22,1,0.36,1), transform .7s cubic-bezier(0.22,1,0.36,1);
+}
+.reveal-item.revealed { opacity: 1; transform: translateY(0); }
+
+.avatar-box {
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+}
+.avatar-box img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* 상단 메뉴 */
+.nav-link {
+  border-radius: 9999px;
+  padding: 0.375rem 1rem;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: all .15s ease;
+}
+.nav-link.is-active {
+  background-image: linear-gradient(to right, #b566ff, #ff5fb0, #5ec8ff);
+  color: #0a0612;
+}
+.nav-link:not(.is-active) {
+  border: 1px solid rgba(140,110,200,0.22);
+  color: #9b94b3;
+}
+.nav-link:not(.is-active):hover {
+  border-color: rgba(181,102,255,0.5);
+  color: #b566ff;
+}
