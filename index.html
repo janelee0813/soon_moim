@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0%25' stop-color='%23b566ff'/><stop offset='50%25' stop-color='%23ff5fb0'/><stop offset='100%25' stop-color='%235ec8ff'/></linearGradient></defs><rect width='32' height='32' rx='7' ry='7' fill='url(%23g)'/></svg>" />
+<title>분당우리교회 4청년부 - 이종환 순</title>
+<meta name="description" content="분당우리교회 4청년부 이종환 순 홈페이지" />
+
+<link rel="preconnect" href="https://cdn.jsdelivr.net" />
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: {
+          sans: ['Pretendard Variable', 'Pretendard', '-apple-system', 'BlinkMacSystemFont', 'Apple SD Gothic Neo', 'Segoe UI', 'Roboto', 'sans-serif']
+        },
+        colors: {
+          background: '#0a0612',
+          surface: '#15101f',
+          'surface-elevated': '#1c1530',
+          foreground: '#f5f1ff',
+          muted: '#1a1428',
+          'muted-foreground': '#9b94b3',
+          border: 'rgba(140,110,200,0.22)',
+          'neon-purple': '#b566ff',
+          'neon-pink': '#ff5fb0',
+          'neon-blue': '#5ec8ff'
+        },
+        animation: {
+          'fade-up': 'fade-up 0.7s cubic-bezier(0.22,1,0.36,1) both',
+          'glow-pulse': 'glow-pulse 3s ease-in-out infinite'
+        },
+        keyframes: {
+          'fade-up': { '0%': { opacity: 0, transform: 'translateY(24px)' }, '100%': { opacity: 1, transform: 'translateY(0)' } },
+          'glow-pulse': { '0%,100%': { boxShadow: '0 0 20px -8px rgba(181,102,255,0.5)' }, '50%': { boxShadow: '0 0 35px -4px rgba(181,102,255,0.85)' } }
+        }
+      }
+    }
+  };
+</script>
+
+<style>
+  html { scroll-behavior: smooth; background: #0a0612; color-scheme: dark; }
+  body { background: #0a0612; color: #f5f1ff; font-family: 'Pretendard Variable', 'Pretendard', -apple-system, sans-serif; -webkit-font-smoothing: antialiased; }
+  ::selection { background: rgba(181,102,255,0.35); }
+
+  .grid-bg {
+    background-image:
+      radial-gradient(circle at 20% 0%, rgba(181,102,255,0.18), transparent 45%),
+      radial-gradient(circle at 80% 10%, rgba(255,95,176,0.14), transparent 50%),
+      radial-gradient(circle at 50% 100%, rgba(94,200,255,0.12), transparent 55%);
+  }
+  .divider-neon {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(181,102,255,0.6), rgba(255,95,176,0.5), transparent);
+  }
+  .neon-card {
+    position: relative;
+    background: linear-gradient(180deg, rgba(28,21,48,0.85), rgba(21,16,31,0.7));
+    border: 1px solid rgba(140,110,200,0.28);
+    backdrop-filter: blur(8px);
+    border-radius: 1rem;
+    transition: transform .3s ease, box-shadow .3s ease;
+  }
+  .neon-card:hover { transform: translateY(-2px); box-shadow: 0 10px 40px -15px rgba(181,102,255,0.5); }
+
+  /* 프로필/섹션 스크롤 리빌 효과 */
+  .reveal-item {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity .7s cubic-bezier(0.22,1,0.36,1), transform .7s cubic-bezier(0.22,1,0.36,1);
+  }
+  .reveal-item.revealed { opacity: 1; transform: translateY(0); }
+
+  .avatar-box {
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+  }
+  .avatar-box img { width: 100%; height: 100%; object-fit: cover; display: block; }
+</style>
+</head>
+<body class="bg-background text-foreground">
+
+<!-- HERO -->
+<section class="relative overflow-hidden">
+  <div class="grid-bg absolute inset-0 -z-10"></div>
+  <div class="absolute inset-x-0 top-0 -z-10 h-px bg-gradient-to-r from-transparent via-neon-purple/60 to-transparent"></div>
+
+  <div class="mx-auto max-w-screen-md px-5 pt-16 pb-16 sm:pt-20 sm:pb-20">
+
+    <p class="text-left text-sm font-medium text-foreground animate-fade-up">
+      분당우리교회 4청년부
+    </p>
+
+    <h1 class="mt-2 text-left text-5xl font-bold leading-[1.1] tracking-tight text-neon-purple sm:text-6xl animate-fade-up" style="animation-delay:60ms">
+      이종환 순
+    </h1>
+
+    <div class="mt-8 animate-fade-up" style="animation-delay:140ms">
+      <button type="button" class="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue px-6 py-3 text-sm font-semibold text-background shadow-[0_10px_40px_-10px_rgba(181,102,255,0.7)] transition-transform hover:scale-[1.03]">
+        한구절묵상
+      </button>
+    </div>
+
+    <div class="neon-card animate-glow-pulse mt-6 p-6 animate-fade-up" style="animation-delay:220ms">
+      <div class="mb-3 text-[11px] font-semibold uppercase tracking-[0.2em] text-neon-purple">
+        시편 23편 1절
+      </div>
+      <p class="text-lg leading-relaxed text-foreground/90">
+        여호와는 나의 목자시니 내가 부족함이 없으리로다
+      </p>
+    </div>
+
+  </div>
+
+  <div class="divider-neon mx-auto max-w-screen-md"></div>
+</section>
+
+<!-- 순원 소개 -->
+<section class="px-5 py-16 sm:py-20">
+  <div class="mx-auto max-w-screen-md">
+
+    <div class="reveal-item mb-8">
+      <div class="mb-3 flex justify-start">
+        <span class="inline-flex items-center gap-2 rounded-full border border-border bg-surface/60 px-3 py-1 text-[11px] font-medium tracking-[0.18em] text-neon-purple uppercase">
+          <span class="h-1.5 w-1.5 rounded-full bg-neon-purple shadow-[0_0_8px_#b566ff]"></span>
+          Members
+        </span>
+      </div>
+      <h2 class="text-2xl font-bold leading-tight tracking-tight text-foreground sm:text-3xl md:text-4xl">
+        순원 소개
+      </h2>
+      <p class="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
+        함께 말씀을 나누는 순원들이에요.
+      </p>
+    </div>
+
+    <div class="grid grid-cols-2 gap-4 sm:grid-cols-5 sm:gap-5" id="member-grid"></div>
+
+  </div>
+</section>
+
+<div class="mx-auto max-w-screen-md px-5 pb-10 text-center text-[11px] text-muted-foreground">
+  분당우리교회 4청년부 이종환 순
+</div>
+
+<script>
+  var members = [
+    "김민준", "이서연", "박도현", "최지우", "정하은",
+    "강태윤", "윤소율", "임현우", "한지민", "오세훈"
+  ];
+
+  var grid = document.getElementById('member-grid');
+  members.forEach(function (name, i) {
+    var wrap = document.createElement('div');
+    wrap.className = 'reveal-item flex flex-col items-center gap-3';
+    wrap.dataset.delay = String(i * 80);
+
+    wrap.innerHTML =
+      '<div class="neon-card avatar-box w-full rounded-2xl">' +
+        '<img src="https://api.dicebear.com/7.x/adventurer/svg?seed=' + encodeURIComponent(name + i) + '&backgroundColor=1c1530,15101f,1a1428" alt="' + name + '" loading="lazy" />' +
+      '</div>' +
+      '<span class="text-sm font-medium text-foreground/90">' + name + '</span>';
+
+    grid.appendChild(wrap);
+  });
+
+  // 스크롤 진입 시 reveal
+  var items = document.querySelectorAll('.reveal-item');
+  var obs = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        var el = entry.target;
+        var delay = Number(el.dataset.delay || 0);
+        setTimeout(function () { el.classList.add('revealed'); }, delay);
+        obs.unobserve(el);
+      }
+    });
+  }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+
+  items.forEach(function (el) { obs.observe(el); });
+</script>
+
+</body>
+</html>
