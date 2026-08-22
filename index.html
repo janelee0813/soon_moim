@@ -31,11 +31,13 @@
         },
         animation: {
           'fade-up': 'fade-up 0.7s cubic-bezier(0.22,1,0.36,1) both',
-          'glow-pulse': 'glow-pulse 3s ease-in-out infinite'
+          'glow-pulse': 'glow-pulse 3s ease-in-out infinite',
+          'shimmer': 'shimmer 6s linear infinite'
         },
         keyframes: {
           'fade-up': { '0%': { opacity: 0, transform: 'translateY(24px)' }, '100%': { opacity: 1, transform: 'translateY(0)' } },
-          'glow-pulse': { '0%,100%': { boxShadow: '0 0 20px -8px rgba(181,102,255,0.5)' }, '50%': { boxShadow: '0 0 35px -4px rgba(181,102,255,0.85)' } }
+          'glow-pulse': { '0%,100%': { boxShadow: '0 0 20px -8px rgba(181,102,255,0.5)' }, '50%': { boxShadow: '0 0 35px -4px rgba(181,102,255,0.85)' } },
+          'shimmer': { '0%': { backgroundPosition: '0% 50%' }, '100%': { backgroundPosition: '200% 50%' } }
         }
       }
     }
@@ -67,6 +69,15 @@
   }
   .neon-card:hover { transform: translateY(-2px); box-shadow: 0 10px 40px -15px rgba(181,102,255,0.5); }
 
+  .text-gradient-neon {
+    background: linear-gradient(100deg, #b566ff 0%, #ff5fb0 50%, #5ec8ff 100%);
+    background-size: 200% auto;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: shimmer 6s linear infinite;
+  }
+
   /* 프로필/섹션 스크롤 리빌 효과 */
   .reveal-item {
     opacity: 0;
@@ -91,17 +102,21 @@
 
   <div class="mx-auto max-w-screen-md px-5 pt-16 pb-16 sm:pt-20 sm:pb-20">
 
-    <p class="text-left text-sm font-medium text-foreground animate-fade-up">
-      분당우리교회 4청년부
-    </p>
+    <div class="inline-flex items-center gap-2 rounded-full border border-border bg-surface/70 px-3 py-1.5 text-xs font-medium text-muted-foreground backdrop-blur animate-fade-up">
+      <svg class="h-3.5 w-3.5 text-neon-pink" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><path d="M9 22V12h6v10"/></svg>
+      <span>분당우리교회 4청년부</span>
+    </div>
 
-    <h1 class="mt-2 text-left text-5xl font-bold leading-[1.1] tracking-tight text-neon-purple sm:text-6xl animate-fade-up" style="animation-delay:60ms">
-      이종환 순
+    <h1 class="mt-4 text-left text-5xl font-bold leading-[1.1] tracking-tight sm:text-6xl animate-fade-up" style="animation-delay:60ms">
+      <span class="text-gradient-neon">이종환 순</span>
     </h1>
 
-    <div class="mt-8 animate-fade-up" style="animation-delay:140ms">
+    <div class="mt-8 flex flex-wrap items-center gap-3 animate-fade-up" style="animation-delay:140ms">
       <a id="meditation-btn" href="https://www.woorichurch.org/modu/ov/ov_meditation.asp" target="_blank" rel="noopener" class="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue px-6 py-3 text-sm font-semibold text-background shadow-[0_10px_40px_-10px_rgba(181,102,255,0.7)] transition-transform hover:scale-[1.03]">
-        한구절묵상
+        한 구절 묵상 바로가기
+      </a>
+      <a href="#" class="inline-flex items-center gap-2 rounded-full border border-border bg-surface/60 px-6 py-3 text-sm font-semibold text-foreground backdrop-blur transition-transform hover:scale-[1.03]">
+        MY PAGE
       </a>
     </div>
 
