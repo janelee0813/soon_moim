@@ -34,6 +34,11 @@
     background: transparent;
   }
   .sched-date.is-tbd .tbd-label { font-size: 12px; font-weight: 700; color: #9b94b3; }
+  .sched-date.is-birthday {
+    border-color: rgba(255,95,176,0.45);
+    background: rgba(255,95,176,0.08);
+  }
+  .sched-date.is-birthday .day { color: #ff5fb0; }
 </style>
 </head>
 <body class="bg-background text-foreground">
@@ -92,18 +97,65 @@
     { month: 12, day: 27, weekday: '주일', title: '하반기 종강 및 마무리' }
   ];
 
-  var UPCOMING = [
-    { title: '가을수련회 (원데이 말씀사경회)' },
-    { title: '1:1 양육훈련' },
-    { title: '하반기 마을훈련' }
+  var BIRTHDAYS = [
+    { name: '이종환', month: 8, day: 13 },
+    { name: '강진원', month: 10, day: 9 },
+    { name: '권은주', month: 1, day: 6 },
+    { name: '김경민', month: 4, day: 17 },
+    { name: '김민지', month: 6, day: 10 },
+    { name: '김상미', month: 11, day: 21 },
+    { name: '김원태', month: 7, day: 10 },
+    { name: '신재호', month: 10, day: 18 },
+    { name: '윤주혜', month: 5, day: 18 },
+    { name: '이은빈', month: 9, day: 24 },
+    { name: '홍영민', month: 3, day: 12 },
+    { name: '이수정', month: 2, day: 1 },
+    { name: '이화진', month: 4, day: 5 }
   ];
+
+  var SCHEDULE_YEAR = 2026;
+  var SCHEDULE_END = SCHEDULE_YEAR + '-12-31';
+
+  function pad2(n) { return String(n).padStart(2, '0'); }
+
+  var kstToday = getKstToday();
+  var todayStr = kstToday.y + '-' + pad2(kstToday.m + 1) + '-' + pad2(kstToday.d);
+
+  var birthdayItems = BIRTHDAYS
+    .map(function (b) {
+      return {
+        month: b.month,
+        day: b.day,
+        weekday: '생일',
+        title: b.name + ' 생일',
+        type: 'birthday',
+        dateStr: SCHEDULE_YEAR + '-' + pad2(b.month) + '-' + pad2(b.day)
+      };
+    })
+    .filter(function (b) { return b.dateStr >= todayStr && b.dateStr <= SCHEDULE_END; });
+
+  var eventItems = SCHEDULE.map(function (e) {
+    return {
+      month: e.month,
+      day: e.day,
+      weekday: e.weekday,
+      title: e.title,
+      type: 'event',
+      dateStr: SCHEDULE_YEAR + '-' + pad2(e.month) + '-' + pad2(e.day)
+    };
+  });
+
+  var combined = eventItems.concat(birthdayItems).sort(function (a, b) {
+    return a.dateStr < b.dateStr ? -1 : (a.dateStr > b.dateStr ? 1 : 0);
+  });
 
   var listEl = document.getElementById('sched-list');
 
-  listEl.innerHTML = SCHEDULE.map(function (item) {
+  listEl.innerHTML = combined.map(function (item) {
+    var dateClass = item.type === 'birthday' ? 'sched-date is-birthday' : 'sched-date';
     return (
       '<div class="flex items-center gap-4 py-4 first:pt-0 last:pb-0">' +
-        '<div class="sched-date">' +
+        '<div class="' + dateClass + '">' +
           '<span class="month">' + item.month + '월</span>' +
           '<span class="day">' + item.day + '</span>' +
         '</div>' +
