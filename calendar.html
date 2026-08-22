@@ -14,37 +14,20 @@
 <link rel="stylesheet" href="assets/theme.css" />
 <script src="assets/app.js"></script>
 <style>
-  .cal-cell {
-    aspect-ratio: 1 / 1;
+  .sched-date {
     display: flex;
-    align-items: flex-start;
-    justify-content: flex-start;
-    padding: 6px 0 0 8px;
-    font-size: 13px;
-    font-weight: 500;
-    border-radius: 0.75rem;
-    color: #f5f1ff;
-  }
-  .cal-cell.is-outside { color: #4a4459; }
-  .cal-cell.is-today {
-    background: linear-gradient(180deg, rgba(28,21,48,0.9), rgba(21,16,31,0.7));
-    border: 1px solid rgba(181,102,255,0.6);
-    box-shadow: 0 0 16px -4px rgba(181,102,255,0.6);
-    color: #b566ff;
-    font-weight: 700;
-  }
-  .cal-nav-btn {
-    display: inline-flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
-    width: 2.25rem;
-    height: 2.25rem;
-    border-radius: 9999px;
+    width: 4.25rem;
+    height: 4.25rem;
+    flex-shrink: 0;
+    border-radius: 1rem;
     border: 1px solid rgba(140,110,200,0.28);
-    color: #f5f1ff;
-    transition: all .15s ease;
+    background: rgba(21,16,31,0.7);
   }
-  .cal-nav-btn:hover { border-color: rgba(181,102,255,0.6); color: #b566ff; }
+  .sched-date .month { font-size: 11px; font-weight: 600; color: #9b94b3; }
+  .sched-date .day { font-size: 22px; font-weight: 700; color: #b566ff; line-height: 1.15; }
 </style>
 </head>
 <body class="bg-background text-foreground">
@@ -78,88 +61,40 @@
         일정
       </h1>
       <p class="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
-        이종환 순의 모임 일정이에요.
+        이종환 순의 주요 일정이에요.
       </p>
     </div>
 
-    <div class="neon-card reveal-item p-5 sm:p-6">
-      <div class="mb-5 flex items-center justify-between">
-        <button type="button" id="cal-prev" class="cal-nav-btn" aria-label="이전 달">
-          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
-        </button>
-        <div id="cal-title" class="text-lg font-bold tracking-tight text-foreground"></div>
-        <button type="button" id="cal-next" class="cal-nav-btn" aria-label="다음 달">
-          <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
-        </button>
-      </div>
-
-      <div class="grid grid-cols-7 gap-1 text-center text-[11px] font-semibold text-muted-foreground">
-        <div class="py-2 text-[#ff5f6d]">일</div>
-        <div class="py-2">월</div>
-        <div class="py-2">화</div>
-        <div class="py-2">수</div>
-        <div class="py-2">목</div>
-        <div class="py-2">금</div>
-        <div class="py-2 text-neon-blue">토</div>
-      </div>
-
-      <div id="cal-grid" class="grid grid-cols-7 gap-1"></div>
-    </div>
+    <div class="neon-card reveal-item divide-y divide-border/60 p-5 sm:p-6" id="sched-list"></div>
 
   </div>
 </section>
 
 <script>
-  var today = getKstToday();
-  var viewYear = today.y;
-  var viewMonth = today.m; // 0-indexed
+  var SCHEDULE = [
+    { month: 8, day: 8, weekday: '주일', title: '순별 스페셜데이' },
+    { month: 9, day: 27, weekday: '주일', title: '부서모임 스페셜데이 (추석)' },
+    { month: 10, day: 25, weekday: '주일', title: '새생명 축제 연계' },
+    { month: 11, day: 29, weekday: '주일', title: '마을별 스페셜데이' },
+    { month: 12, day: 27, weekday: '주일', title: '하반기 종강 및 마무리' }
+  ];
 
-  var titleEl = document.getElementById('cal-title');
-  var gridEl = document.getElementById('cal-grid');
+  var listEl = document.getElementById('sched-list');
 
-  function renderCalendar() {
-    titleEl.textContent = viewYear + '년 ' + (viewMonth + 1) + '월';
-    gridEl.innerHTML = '';
-
-    var firstWeekday = new Date(Date.UTC(viewYear, viewMonth, 1)).getUTCDay();
-    var daysInMonth = new Date(Date.UTC(viewYear, viewMonth + 1, 0)).getUTCDate();
-    var daysInPrevMonth = new Date(Date.UTC(viewYear, viewMonth, 0)).getUTCDate();
-
-    var totalCells = Math.ceil((firstWeekday + daysInMonth) / 7) * 7;
-
-    for (var i = 0; i < totalCells; i++) {
-      var cell = document.createElement('div');
-      var dayNum = i - firstWeekday + 1;
-
-      if (dayNum < 1) {
-        cell.className = 'cal-cell is-outside';
-        cell.textContent = daysInPrevMonth + dayNum;
-      } else if (dayNum > daysInMonth) {
-        cell.className = 'cal-cell is-outside';
-        cell.textContent = dayNum - daysInMonth;
-      } else {
-        var isToday = viewYear === today.y && viewMonth === today.m && dayNum === today.d;
-        cell.className = 'cal-cell' + (isToday ? ' is-today' : '');
-        cell.textContent = String(dayNum);
-      }
-
-      gridEl.appendChild(cell);
-    }
-  }
-
-  document.getElementById('cal-prev').addEventListener('click', function () {
-    viewMonth -= 1;
-    if (viewMonth < 0) { viewMonth = 11; viewYear -= 1; }
-    renderCalendar();
-  });
-
-  document.getElementById('cal-next').addEventListener('click', function () {
-    viewMonth += 1;
-    if (viewMonth > 11) { viewMonth = 0; viewYear += 1; }
-    renderCalendar();
-  });
-
-  renderCalendar();
+  listEl.innerHTML = SCHEDULE.map(function (item) {
+    return (
+      '<div class="flex items-center gap-4 py-4 first:pt-0 last:pb-0">' +
+        '<div class="sched-date">' +
+          '<span class="month">' + item.month + '월</span>' +
+          '<span class="day">' + item.day + '</span>' +
+        '</div>' +
+        '<div class="min-w-0">' +
+          '<div class="text-[11px] font-medium text-muted-foreground">' + item.weekday + '</div>' +
+          '<div class="text-base font-semibold leading-snug text-foreground">' + item.title + '</div>' +
+        '</div>' +
+      '</div>'
+    );
+  }).join('');
 
   var items = document.querySelectorAll('.reveal-item');
   var obs = new IntersectionObserver(function (entries) {
