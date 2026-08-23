@@ -177,7 +177,7 @@
 
     // ---- 내 출석 통계 (해당 연도만, 이후 해마다 자동 누적) ----
     var statYear = getKstToday().y;
-    document.getElementById('stat-year-label').textContent = statYear + '년 출석통계';
+    document.getElementById('stat-year-label').textContent = statYear + '년 2학기 출석 통계';
 
     sb.from('attendance')
       .select('*')
@@ -223,8 +223,12 @@
           var deptBadge = simpleBadge('부서모임', r.department_meeting);
           var soonBadge = simpleBadge('순모임', r.soon_meeting);
 
+          var rowLabel = r.service_date === getRecentSundayString()
+            ? '이번주 출석 현황'
+            : formatDate(r.service_date) + ' 출석현황';
+
           return '<div class="border-t border-border/60 py-3 first:border-0">' +
-            '<div class="text-xs font-semibold text-muted-foreground">' + formatDate(r.service_date) + ' 출석현황</div>' +
+            '<div class="text-xs font-semibold text-muted-foreground">' + rowLabel + '</div>' +
             '<div class="mt-2 flex flex-wrap gap-2">' + worshipBadge + deptBadge + soonBadge + '</div>' +
           '</div>';
         }).join('');
