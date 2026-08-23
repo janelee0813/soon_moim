@@ -282,7 +282,7 @@
     wrap.className = 'neon-card reveal-item p-5 sm:p-6';
 
     var metaLine = (authorName ? escapeHtml(authorName) + ' · ' : '') +
-      formatDate(post.created_at) + ' · 조회 ' + (post.view_count || 0);
+      formatDate(post.created_at) + ' · 조회 <span data-role="view-count">' + (post.view_count || 0) + '</span>';
     var captionHtml = post.caption
       ? '<p class="mt-2 text-sm leading-relaxed text-foreground/80 whitespace-pre-wrap">' + escapeHtml(post.caption) + '</p>'
       : '';
@@ -432,7 +432,11 @@
             el.dataset.delay = String(i * 80);
             listEl.appendChild(el);
 
-            sb.rpc('increment_sermon_note_views', { p_id: post.id }); // 조회수 증가 (결과를 기다리지 않음)
+            sb.rpc('increment_sermon_note_views', { p_id: post.id }).then(function (res) {
+              if (res.error) return;
+              var countEl = el.querySelector('[data-role="view-count"]');
+              if (countEl) countEl.textContent = String((post.view_count || 0) + 1);
+            });
           });
 
           observeAllReveal();
