@@ -185,10 +185,19 @@
             <input id="attend-date" type="date" class="date-field" />
           </div>
         </div>
+        <div class="mb-4">
+          <label class="mb-1 block text-xs font-medium text-muted-foreground">순 특이사항 (이번 주, 선택)</label>
+          <textarea id="attend-group-note" class="textarea-field" style="min-height:70px" placeholder="이번 주 순 모임 특이사항을 적어주세요"></textarea>
+        </div>
         <div id="attend-list"></div>
-        <button id="attend-save" type="button" class="mt-4 w-full rounded-full bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue px-5 py-2.5 text-sm font-semibold text-background transition-transform hover:scale-[1.02]">
-          저장
-        </button>
+        <div class="mt-4 flex flex-col gap-2 sm:flex-row">
+          <button id="attend-save" type="button" class="w-full rounded-full bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue px-5 py-2.5 text-sm font-semibold text-background transition-transform hover:scale-[1.02] sm:flex-1">
+            저장
+          </button>
+          <button id="attend-report-btn" type="button" class="w-full rounded-full border border-border px-5 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-neon-purple/50 hover:text-neon-purple sm:flex-1">
+            이번 주 리포트 다운로드
+          </button>
+        </div>
         <p id="attend-saved-msg" class="mt-2 hidden text-center text-xs text-neon-blue">저장되었습니다</p>
       </div>
     </div>
@@ -294,7 +303,20 @@
     var attendDateInput = document.getElementById('attend-date');
     attendDateInput.value = getRecentSundayString();
 
+    function updateMemberRowUI(row, memberId) {
+      var st = attendState[memberId];
+      ['sunday_worship', 'department_meeting', 'soon_meeting'].forEach(function (field) {
+        var group = row.querySelector('[data-field="' + field + '"]');
+        group.querySelectorAll('.seg-btn').forEach(function (btn) {
+          btn.classList.toggle('is-on', btn.dataset.value === st[field]);
+        });
+      });
+      row.querySelector('[data-field="online_worship_wrap"]').classList.toggle('hidden', st.sunday_worship !== 'absent');
+    }
+
     function renderAttendList() {
+      // 매번 전체를 다시 그리면 입력 중이던 특이사항 textarea 값이 날아가므로,
+      // 최초 1회만 DOM을 만들고 이후에는 updateMemberRowUI로 필요한 부분만 갱신
       var listEl = document.getElementById('attend-list');
       listEl.innerHTML = membersCache.map(function (m) {
         var st = attendState[m.id];
@@ -330,6 +352,7 @@
                 '</div>' +
               '</div>' +
             '</div>' +
+            '<textarea class="textarea-field mt-2" style="min-height:50px" data-field="member-note" placeholder="특이사항/기도제목 (선택)"></textarea>' +
           '</div>'
         );
       }).join('');
@@ -337,14 +360,14 @@
       listEl.querySelectorAll('.member-row').forEach(function (row) {
         var memberId = Number(row.dataset.memberId);
 
-        row.querySelectorAll('[data-field="sunday_worship"] .seg-btn, [data-field="department_meeting"] .seg-btn, [data-field="soon_meeting"] .seg-btn').forEach(function (btn) {
+        row.querySelectorAll('.seg-btn').forEach(function (btn) {
           btn.addEventListener('click', function () {
             var field = btn.parentElement.dataset.field;
             attendState[memberId][field] = btn.dataset.value;
             if (field === 'sunday_worship' && btn.dataset.value === 'present') {
               attendState[memberId].online_worship = false;
             }
-            renderAttendList();
+            updateMemberRowUI(row, memberId);
           });
         });
 
@@ -377,6 +400,27 @@
 
     attendDateInput.addEventListener('change', loadAttendance);
 
+    function collectNoteInserts(serviceDate) {
+      var inserts = [];
+
+      var groupNoteEl = document.getElementById('attend-group-note');
+      var groupNote = groupNoteEl.value.trim();
+      if (groupNote) inserts.push({ member_id: null, note_date: serviceDate, content: groupNote });
+
+      document.querySelectorAll('#attend-list .member-row').forEach(function (row) {
+        var noteEl = row.querySelector('[data-field="member-note"]');
+        var text = noteEl.value.trim();
+        if (text) inserts.push({ member_id: Number(row.dataset.memberId), note_date: serviceDate, content: text });
+      });
+
+      return inserts;
+    }
+
+    function clearNoteInputs() {
+      document.getElementById('attend-group-note').value = '';
+      document.querySelectorAll('#attend-list [data-field="member-note"]').forEach(function (el) { el.value = ''; });
+    }
+
     document.getElementById('attend-save').addEventListener('click', function () {
       var serviceDate = attendDateInput.value;
       var msg = document.getElementById('attend-saved-msg');
@@ -399,7 +443,9 @@
           return row.sunday_worship !== null || row.department_meeting !== null || row.soon_meeting !== null;
         });
 
-      if (rows.length === 0) {
+      var noteInserts = collectNoteInserts(serviceDate);
+
+      if (rows.length === 0 && noteInserts.length === 0) {
         msg.textContent = '선택된 항목이 없어서 저장하지 않았어요';
         msg.classList.remove('hidden');
         setTimeout(function () { msg.classList.add('hidden'); }, 2500);
@@ -409,9 +455,18 @@
       var btn = document.getElementById('attend-save');
       btn.disabled = true;
 
-      sb.from('attendance').upsert(rows, { onConflict: 'member_id,service_date' }).then(function (res) {
+      var attendanceSave = rows.length
+        ? sb.from('attendance').upsert(rows, { onConflict: 'member_id,service_date' })
+        : Promise.resolve({ error: null });
+      var noteSave = noteInserts.length
+        ? sb.from('special_notes').insert(noteInserts)
+        : Promise.resolve({ error: null });
+
+      Promise.all([attendanceSave, noteSave]).then(function (results) {
         btn.disabled = false;
-        if (res.error) return;
+        if (results[0].error || results[1].error) return;
+        clearNoteInputs();
+        loadNotes();
         msg.textContent = '저장되었습니다';
         msg.classList.remove('hidden');
         setTimeout(function () { msg.classList.add('hidden'); }, 2500);
@@ -586,6 +641,80 @@
     }
 
     // ---- 엑셀 다운로드 ----
+    // ---- 이번 주 리포트 다운로드 (목양일지 양식) ----
+    function downloadWeeklyReport() {
+      var serviceDate = attendDateInput.value;
+
+      Promise.all([
+        sb.from('special_notes').select('*').eq('note_date', serviceDate),
+        sb.from('prayer_requests').select('*')
+      ]).then(function (results) {
+        var notes = results[0].data || [];
+        var prayers = results[1].data || [];
+
+        var groupNote = notes
+          .filter(function (n) { return !n.member_id; })
+          .map(function (n) { return n.content; })
+          .join('\n\n');
+
+        var noteByMember = {};
+        notes.forEach(function (n) {
+          if (!n.member_id) return;
+          noteByMember[n.member_id] = (noteByMember[n.member_id] ? noteByMember[n.member_id] + '\n\n' : '') + n.content;
+        });
+
+        var prayerByMember = {};
+        prayers.forEach(function (p) { prayerByMember[p.member_id] = p.content; });
+
+        function mark(v) {
+          if (v === 'present') return 'O';
+          if (v === 'absent') return 'X';
+          return '-';
+        }
+
+        var aoa = [];
+        var merges = [];
+
+        aoa.push(['이종환 순 순모임 목양일지']);
+        aoa.push([]);
+        aoa.push(['날짜', '장소', '순 특이사항']);
+        aoa.push([serviceDate, '', groupNote]);
+        aoa.push([]);
+        aoa.push(['No', '이름', '항목', '출석', '특이사항/기도제목']);
+
+        var num = 0;
+        membersCache.forEach(function (m) {
+          var st = attendState[m.id] || {};
+          var noLabel = m.role === 'leader' ? 'S' : String(++num);
+
+          var combinedNote = [noteByMember[m.id], prayerByMember[m.id] ? '[기도제목] ' + prayerByMember[m.id] : '']
+            .filter(Boolean)
+            .join('\n\n');
+
+          var startRow = aoa.length;
+          aoa.push([noLabel, m.name, '예배', mark(st.sunday_worship), combinedNote]);
+          aoa.push(['', '', '부서', mark(st.department_meeting), '']);
+          aoa.push(['', '', '순', mark(st.soon_meeting), '']);
+          var endRow = aoa.length - 1;
+
+          merges.push({ s: { r: startRow, c: 0 }, e: { r: endRow, c: 0 } });
+          merges.push({ s: { r: startRow, c: 1 }, e: { r: endRow, c: 1 } });
+          merges.push({ s: { r: startRow, c: 4 }, e: { r: endRow, c: 4 } });
+        });
+
+        var ws = XLSX.utils.aoa_to_sheet(aoa);
+        ws['!merges'] = merges;
+        ws['!cols'] = [{ wch: 5 }, { wch: 14 }, { wch: 8 }, { wch: 8 }, { wch: 50 }];
+
+        var wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, '목양일지');
+
+        XLSX.writeFile(wb, '목양일지_' + serviceDate + '.xlsx');
+      });
+    }
+
+    document.getElementById('attend-report-btn').addEventListener('click', downloadWeeklyReport);
+
     function downloadExcel() {
       Promise.all([
         sb.from('attendance').select('*').order('service_date', { ascending: true }),
