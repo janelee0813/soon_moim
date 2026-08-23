@@ -277,11 +277,12 @@
   });
 
   // ---- 게시글 렌더 ----
-  function renderPost(post, authorName) {
+  function renderPost(post, authorName, comments) {
     var wrap = document.createElement('article');
     wrap.className = 'neon-card reveal-item p-5 sm:p-6';
 
-    var metaLine = (authorName ? escapeHtml(authorName) + ' · ' : '') + formatDate(post.created_at);
+    var metaLine = (authorName ? escapeHtml(authorName) + ' · ' : '') +
+      formatDate(post.created_at) + ' · 조회 ' + (post.view_count || 0);
     var captionHtml = post.caption
       ? '<p class="mt-2 text-sm leading-relaxed text-foreground/80 whitespace-pre-wrap">' + escapeHtml(post.caption) + '</p>'
       : '';
@@ -292,13 +293,39 @@
       }).join('') +
       '</div>';
 
+    var deleteBtnHtml = (session && session.role === 'leader')
+      ? '<button type="button" class="delete-btn shrink-0" data-action="delete">삭제</button>'
+      : '';
+
+    var commentsHtml = comments.map(function (c) {
+      return '<div class="border-t border-border/60 pt-3 mt-3 first:mt-0 first:border-0 first:pt-0">' +
+        '<div class="flex items-baseline justify-between gap-2">' +
+          '<span class="text-sm font-semibold text-foreground/90">' + escapeHtml(c.author_name) + '</span>' +
+          '<span class="text-[11px] text-muted-foreground">' + formatDate(c.created_at) + '</span>' +
+        '</div>' +
+        '<p class="mt-1 text-sm leading-relaxed text-foreground/80">' + escapeHtml(c.content) + '</p>' +
+      '</div>';
+    }).join('');
+
     wrap.innerHTML =
-      '<div>' +
-        '<h2 class="text-lg font-bold text-foreground sm:text-xl">' + escapeHtml(post.title) + '</h2>' +
-        '<div class="mt-1 text-[11px] text-muted-foreground">' + metaLine + '</div>' +
+      '<div class="flex items-start justify-between gap-3">' +
+        '<div class="min-w-0">' +
+          '<h2 class="text-lg font-bold text-foreground sm:text-xl">' + escapeHtml(post.title) + '</h2>' +
+          '<div class="mt-1 text-[11px] text-muted-foreground">' + metaLine + '</div>' +
+        '</div>' +
+        deleteBtnHtml +
       '</div>' +
       captionHtml +
-      galleryHtml;
+      galleryHtml +
+      '<div class="mt-5 border-t border-border pt-4">' +
+        '<div class="mb-2 text-[13px] font-semibold text-foreground/80">댓글 <span data-role="comment-count">' + comments.length + '</span>개</div>' +
+        '<div data-role="comment-list">' + commentsHtml + '</div>' +
+        '<form data-role="comment-form" class="mt-4 flex flex-col gap-2 sm:flex-row">' +
+          '<input type="text" name="author" maxlength="30" required placeholder="이름" class="comment-input sm:w-28" />' +
+          '<input type="text" name="content" maxlength="500" required placeholder="댓글을 남겨보세요" class="comment-input flex-1" />' +
+          '<button type="submit" class="shrink-0 rounded-full bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue px-4 py-2 text-sm font-semibold text-background transition-transform hover:scale-[1.03]">등록</button>' +
+        '</form>' +
+      '</div>';
 
     wrap.querySelectorAll('.gallery-thumb').forEach(function (img) {
       img.addEventListener('click', function () {
@@ -306,7 +333,68 @@
       });
     });
 
+    var deleteBtn = wrap.querySelector('[data-action="delete"]');
+    if (deleteBtn) {
+      deleteBtn.addEventListener('click', function () { deletePost(post, wrap); });
+    }
+
+    var form = wrap.querySelector('[data-role="comment-form"]');
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      var author = form.author.value.trim();
+      var content = form.content.value.trim();
+      if (!author || !content) return;
+      submitComment(post.id, author, content, wrap);
+    });
+
     return wrap;
+  }
+
+  function submitComment(noteId, author, content, wrap) {
+    sb.from('sermon_note_comments')
+      .insert({ note_id: noteId, author_name: author, content: content })
+      .select()
+      .then(function (res) {
+        if (res.error || !res.data || !res.data[0]) return;
+        var c = res.data[0];
+        var listRoot = wrap.querySelector('[data-role="comment-list"]');
+        var item = document.createElement('div');
+        item.className = 'border-t border-border/60 pt-3 mt-3 first:mt-0 first:border-0 first:pt-0';
+        item.innerHTML =
+          '<div class="flex items-baseline justify-between gap-2">' +
+            '<span class="text-sm font-semibold text-foreground/90">' + escapeHtml(c.author_name) + '</span>' +
+            '<span class="text-[11px] text-muted-foreground">' + formatDate(c.created_at) + '</span>' +
+          '</div>' +
+          '<p class="mt-1 text-sm leading-relaxed text-foreground/80">' + escapeHtml(c.content) + '</p>';
+        listRoot.appendChild(item);
+
+        var countEl = wrap.querySelector('[data-role="comment-count"]');
+        countEl.textContent = String(Number(countEl.textContent) + 1);
+
+        var form = wrap.querySelector('[data-role="comment-form"]');
+        form.reset();
+      });
+  }
+
+  function deletePost(post, wrap) {
+    if (!window.confirm('이 말씀노트를 삭제할까요? 되돌릴 수 없어요.')) return;
+
+    var marker = '/object/public/sermon-notes/';
+    var paths = post.image_paths
+      .map(function (url) {
+        var idx = url.indexOf(marker);
+        return idx >= 0 ? url.slice(idx + marker.length) : null;
+      })
+      .filter(Boolean);
+
+    var removeStorage = paths.length ? sb.storage.from('sermon-notes').remove(paths) : Promise.resolve();
+
+    Promise.resolve(removeStorage).then(function () {
+      return sb.from('sermon_notes').delete().eq('id', post.id);
+    }).then(function (res) {
+      if (res && res.error) return;
+      wrap.remove();
+    });
   }
 
   function loadPosts() {
@@ -328,14 +416,27 @@
       }
       emptyEl.classList.add('hidden');
 
-      posts.forEach(function (post, i) {
-        var authorName = post.member_id ? authorById[post.member_id] : null;
-        var el = renderPost(post, authorName);
-        el.dataset.delay = String(i * 80);
-        listEl.appendChild(el);
-      });
+      var postIds = posts.map(function (p) { return p.id; });
 
-      observeAllReveal();
+      sb.from('sermon_note_comments')
+        .select('*')
+        .in('note_id', postIds)
+        .order('created_at', { ascending: true })
+        .then(function (commentsRes) {
+          var comments = commentsRes.data || [];
+
+          posts.forEach(function (post, i) {
+            var authorName = post.member_id ? authorById[post.member_id] : null;
+            var postComments = comments.filter(function (c) { return c.note_id === post.id; });
+            var el = renderPost(post, authorName, postComments);
+            el.dataset.delay = String(i * 80);
+            listEl.appendChild(el);
+
+            sb.rpc('increment_sermon_note_views', { p_id: post.id }); // 조회수 증가 (결과를 기다리지 않음)
+          });
+
+          observeAllReveal();
+        });
     });
   }
 
