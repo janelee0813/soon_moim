@@ -131,15 +131,20 @@
     return 'https://api.dicebear.com/7.x/personas/svg?' + params;
   }
 
+  // 아바타는 항상 같은 이미지가 나오도록, 순서와 무관한 고정 시드를 미리 부여
+  members.forEach(function (member, i) { member.seedKey = member.name + i; });
+
   var grid = document.getElementById('member-grid');
-  members.forEach(function (member, i) {
+
+  function buildMemberCard(member, i, skipFadeIn) {
     var wrap = document.createElement('div');
-    wrap.className = 'reveal-item flex flex-col items-center gap-3';
+    wrap.className = 'reveal-item flex flex-col items-center gap-3' + (skipFadeIn ? ' revealed' : '');
     wrap.dataset.delay = String(i * 80);
+    wrap.dataset.name = member.name;
 
     var avatarSrc = member.avatar
       ? member.avatar
-      : personaAvatarUrl(member.name + i, member.gender);
+      : personaAvatarUrl(member.seedKey, member.gender);
 
     wrap.innerHTML =
       '<div class="neon-card avatar-box w-full rounded-2xl">' +
@@ -147,8 +152,17 @@
       '</div>' +
       '<span class="text-sm font-medium text-foreground/90">' + member.name + '</span>';
 
-    grid.appendChild(wrap);
-  });
+    return wrap;
+  }
+
+  function renderMembers(skipFadeIn) {
+    grid.innerHTML = '';
+    members.forEach(function (member, i) {
+      grid.appendChild(buildMemberCard(member, i, skipFadeIn));
+    });
+  }
+
+  renderMembers(false);
 
   // 스크롤 진입 시 reveal
   var items = document.querySelectorAll('.reveal-item');
@@ -164,6 +178,62 @@
   }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
 
   items.forEach(function (el) { obs.observe(el); });
+
+  // 30초마다 순원 카드 순서를 랜덤으로 섞고, 자리를 부드럽게 바꾸는 애니메이션(FLIP)
+  function shuffleArray(arr) {
+    for (var i = arr.length - 1; i > 0; i--) {
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = arr[i]; arr[i] = arr[j]; arr[j] = tmp;
+    }
+  }
+
+  function shuffleMembersWithFlip() {
+    var oldRects = {};
+    Array.prototype.forEach.call(grid.children, function (child) {
+      oldRects[child.dataset.name] = child.getBoundingClientRect();
+    });
+
+    shuffleArray(members);
+    renderMembers(true);
+
+    Array.prototype.forEach.call(grid.children, function (child) {
+      var oldRect = oldRects[child.dataset.name];
+      if (!oldRect) return;
+      var newRect = child.getBoundingClientRect();
+      var dx = oldRect.left - newRect.left;
+      var dy = oldRect.top - newRect.top;
+      if (!dx && !dy) return;
+
+      var wobble = (Math.random() * 8 - 4).toFixed(1);
+      child.style.transition = 'none';
+      child.style.transform = 'translate(' + dx + 'px,' + dy + 'px) scale(1.08) rotate(' + wobble + 'deg)';
+      child.style.zIndex = '1';
+
+      requestAnimationFrame(function () {
+        requestAnimationFrame(function () {
+          child.style.transition = 'transform 0.8s cubic-bezier(0.34,1.56,0.64,1)';
+          child.style.transform = '';
+          setTimeout(function () { child.style.zIndex = ''; }, 800);
+        });
+      });
+    });
+  }
+
+  // 순원 카드가 스크롤로 처음 보이는 시점에 한 번 셔플하고, 이후 20초마다 반복
+  var shuffleStarted = false;
+  var shuffleStartObs = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting && !shuffleStarted) {
+        shuffleStarted = true;
+        setTimeout(function () {
+          shuffleMembersWithFlip();
+          setInterval(shuffleMembersWithFlip, 20000);
+        }, 700); // 카드 페이드인이 끝난 뒤 자연스럽게 이어지도록 약간의 지연
+        shuffleStartObs.disconnect();
+      }
+    });
+  }, { threshold: 0.2 });
+  shuffleStartObs.observe(grid);
 
   // 한국 표준시(KST, UTC+9) 기준 오늘 날짜 문자열(YYYY-MM-DD)과
   // 다음 00:00까지 남은 시간을 계산
