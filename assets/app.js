@@ -46,11 +46,8 @@ function mountAuthNav() {
     return;
   }
 
-  var html = '';
-  if (s.role === 'leader') {
-    html += '<a href="admin" class="nav-link">관리자</a>';
-  }
-  html += '<a href="mypage" class="nav-link">' + escapeHtml(s.name) + '님</a>';
+  var homeHref = s.role === 'leader' ? 'admin' : 'mypage';
+  var html = '<a href="' + homeHref + '" class="nav-link">' + escapeHtml(s.name) + '님</a>';
   html += '<button type="button" id="logout-btn" class="nav-link">로그아웃</button>';
   el.innerHTML = html;
 
