@@ -352,7 +352,7 @@
                 '</div>' +
               '</div>' +
             '</div>' +
-            '<textarea class="textarea-field mt-2" style="min-height:50px" data-field="member-note" placeholder="특이사항/기도제목 (선택)"></textarea>' +
+            '<textarea class="textarea-field mt-2" style="min-height:50px" data-field="member-note" placeholder="특이사항/기도제목 (선택)">' + escapeHtml(attendOriginalNotes.members[m.id] || '') + '</textarea>' +
           '</div>'
         );
       }).join('');
@@ -380,11 +380,17 @@
       });
     }
 
+    var attendOriginalNotes = { group: '', members: {} }; // 이 주차에 이미 저장돼 있던 특이사항 (변경 여부 판단 및 중복 저장 방지용)
+
     function loadAttendance() {
       var serviceDate = attendDateInput.value;
-      sb.from('attendance').select('*').eq('service_date', serviceDate).then(function (res) {
+
+      Promise.all([
+        sb.from('attendance').select('*').eq('service_date', serviceDate),
+        sb.from('special_notes').select('*').eq('note_date', serviceDate).order('created_at', { ascending: true })
+      ]).then(function (results) {
         var existing = {};
-        (res.data || []).forEach(function (r) { existing[r.member_id] = r; });
+        (results[0].data || []).forEach(function (r) { existing[r.member_id] = r; });
 
         attendState = {};
         membersCache.forEach(function (m) {
@@ -394,31 +400,42 @@
             : { sunday_worship: null, online_worship: false, department_meeting: null, soon_meeting: null };
         });
 
+        // 이 주차에 이미 저장된 특이사항을 불러와 입력칸에 다시 채워줌 (마지막 저장 내용 기준)
+        attendOriginalNotes = { group: '', members: {} };
+        (results[1].data || []).forEach(function (n) {
+          if (n.member_id) {
+            attendOriginalNotes.members[n.member_id] = n.content;
+          } else {
+            attendOriginalNotes.group = n.content;
+          }
+        });
+
+        document.getElementById('attend-group-note').value = attendOriginalNotes.group;
+
         renderAttendList();
       });
     }
 
     attendDateInput.addEventListener('change', loadAttendance);
 
+    // 이미 저장된 내용과 달라진 경우에만 새로 기록 (재저장할 때마다 중복으로 쌓이지 않도록)
     function collectNoteInserts(serviceDate) {
       var inserts = [];
 
-      var groupNoteEl = document.getElementById('attend-group-note');
-      var groupNote = groupNoteEl.value.trim();
-      if (groupNote) inserts.push({ member_id: null, note_date: serviceDate, content: groupNote });
+      var groupNote = document.getElementById('attend-group-note').value.trim();
+      if (groupNote && groupNote !== attendOriginalNotes.group) {
+        inserts.push({ member_id: null, note_date: serviceDate, content: groupNote });
+      }
 
       document.querySelectorAll('#attend-list .member-row').forEach(function (row) {
-        var noteEl = row.querySelector('[data-field="member-note"]');
-        var text = noteEl.value.trim();
-        if (text) inserts.push({ member_id: Number(row.dataset.memberId), note_date: serviceDate, content: text });
+        var memberId = Number(row.dataset.memberId);
+        var text = row.querySelector('[data-field="member-note"]').value.trim();
+        if (text && text !== (attendOriginalNotes.members[memberId] || '')) {
+          inserts.push({ member_id: memberId, note_date: serviceDate, content: text });
+        }
       });
 
       return inserts;
-    }
-
-    function clearNoteInputs() {
-      document.getElementById('attend-group-note').value = '';
-      document.querySelectorAll('#attend-list [data-field="member-note"]').forEach(function (el) { el.value = ''; });
     }
 
     document.getElementById('attend-save').addEventListener('click', function () {
@@ -465,7 +482,13 @@
       Promise.all([attendanceSave, noteSave]).then(function (results) {
         btn.disabled = false;
         if (results[0].error || results[1].error) return;
-        clearNoteInputs();
+
+        // 방금 저장한 내용을 "이미 저장된 내용"으로 갱신 (입력칸은 그대로 유지, 중복 재저장만 방지)
+        noteInserts.forEach(function (n) {
+          if (n.member_id) attendOriginalNotes.members[n.member_id] = n.content;
+          else attendOriginalNotes.group = n.content;
+        });
+
         loadNotes();
         msg.textContent = '저장되었습니다';
         msg.classList.remove('hidden');
