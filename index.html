@@ -197,7 +197,10 @@
     shuffleArray(members);
     renderMembers(true);
 
-    Array.prototype.forEach.call(grid.children, function (child) {
+    var SHUFFLE_DURATION_MS = 1800;
+    var STAGGER_STEP_MS = 90;
+
+    Array.prototype.forEach.call(grid.children, function (child, i) {
       var oldRect = oldRects[child.dataset.name];
       if (!oldRect) return;
       var newRect = child.getBoundingClientRect();
@@ -205,16 +208,17 @@
       var dy = oldRect.top - newRect.top;
       if (!dx && !dy) return;
 
-      var wobble = (Math.random() * 8 - 4).toFixed(1);
+      var wobble = (Math.random() * 10 - 5).toFixed(1);
+      var delay = i * STAGGER_STEP_MS;
       child.style.transition = 'none';
-      child.style.transform = 'translate(' + dx + 'px,' + dy + 'px) scale(1.08) rotate(' + wobble + 'deg)';
+      child.style.transform = 'translate(' + dx + 'px,' + dy + 'px) scale(1.1) rotate(' + wobble + 'deg)';
       child.style.zIndex = '1';
 
       requestAnimationFrame(function () {
         requestAnimationFrame(function () {
-          child.style.transition = 'transform 0.8s cubic-bezier(0.34,1.56,0.64,1)';
+          child.style.transition = 'transform ' + SHUFFLE_DURATION_MS + 'ms cubic-bezier(0.34,1.56,0.64,1) ' + delay + 'ms';
           child.style.transform = '';
-          setTimeout(function () { child.style.zIndex = ''; }, 800);
+          setTimeout(function () { child.style.zIndex = ''; }, SHUFFLE_DURATION_MS + delay);
         });
       });
     });
