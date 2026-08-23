@@ -86,6 +86,7 @@
     color: #f5f1ff;
   }
   .lightbox-close { top: 16px; right: 16px; }
+  .lightbox-download { top: 16px; right: 76px; }
   .lightbox-prev { left: 16px; top: 50%; transform: translateY(-50%); }
   .lightbox-next { right: 16px; top: 50%; transform: translateY(-50%); }
   .lightbox-count { position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); font-size: 12px; color: #9b94b3; }
@@ -146,9 +147,7 @@
         </div>
       </form>
     </div>
-    <div id="write-login-prompt" class="reveal-item mb-6 hidden rounded-2xl border border-dashed border-border p-5 text-center text-sm text-muted-foreground">
-      <a href="login" class="font-semibold text-neon-purple">로그인</a> 후 말씀노트를 올릴 수 있어요.
-    </div>
+    <div id="write-restricted-note" class="reveal-item mb-6 hidden rounded-2xl border border-dashed border-border p-5 text-center text-sm text-muted-foreground"></div>
 
     <div id="post-list" class="space-y-5"></div>
     <div id="empty-state" class="reveal-item hidden text-center text-sm text-muted-foreground py-12">
@@ -161,6 +160,9 @@
 <div id="lightbox" class="lightbox-overlay">
   <button type="button" class="lightbox-btn lightbox-close" id="lightbox-close" aria-label="닫기">
     <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+  </button>
+  <button type="button" class="lightbox-btn lightbox-download" id="lightbox-download" aria-label="다운로드">
+    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0-4-4m4 4 4-4M4 21h16"/></svg>
   </button>
   <button type="button" class="lightbox-btn lightbox-prev" id="lightbox-prev" aria-label="이전 이미지">
     <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
@@ -216,6 +218,30 @@
   }
 
   function closeLightbox() { lightbox.classList.remove('is-open'); }
+
+  function downloadImage(url) {
+    fetch(url)
+      .then(function (res) { return res.blob(); })
+      .then(function (blob) {
+        var blobUrl = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        var fname = url.split('/').pop().split('?')[0] || 'sermon-note.jpg';
+        a.href = blobUrl;
+        a.download = fname;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(function () { URL.revokeObjectURL(blobUrl); }, 1000);
+      })
+      .catch(function () {
+        // 다운로드 강제가 안 되는 환경이면 새 탭으로 열어서 수동 저장 가능하게
+        window.open(url, '_blank');
+      });
+  }
+
+  document.getElementById('lightbox-download').addEventListener('click', function () {
+    downloadImage(lightboxImages[lightboxIndex]);
+  });
 
   document.getElementById('lightbox-close').addEventListener('click', closeLightbox);
   document.getElementById('lightbox-prev').addEventListener('click', function () {
@@ -299,15 +325,16 @@
     });
   }
 
-  // ---- 말씀노트 작성 (로그인한 사람만) ----
+  // ---- 말씀노트 작성 (관리자만) ----
   var session = getSession();
   var writeCard = document.getElementById('write-card');
-  var writeLoginPrompt = document.getElementById('write-login-prompt');
+  var restrictedNote = document.getElementById('write-restricted-note');
 
-  if (session) {
+  if (session && session.role === 'leader') {
     writeCard.classList.remove('hidden');
   } else {
-    writeLoginPrompt.classList.remove('hidden');
+    restrictedNote.classList.remove('hidden');
+    restrictedNote.textContent = '말씀노트는 관리자만 올릴 수 있어요.';
   }
 
   var fileInput = document.getElementById('file-input');
