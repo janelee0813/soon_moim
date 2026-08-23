@@ -4,8 +4,8 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0%25' stop-color='%23b566ff'/><stop offset='50%25' stop-color='%23ff5fb0'/><stop offset='100%25' stop-color='%235ec8ff'/></linearGradient></defs><rect width='32' height='32' rx='7' ry='7' fill='url(%23g)'/></svg>" />
-<title>공지 - 분당우리교회 4청년부 이종환 순</title>
-<meta name="description" content="분당우리교회 4청년부 이종환 순 공지사항" />
+<title>기도노트 - 분당우리교회 4청년부 이종환 순</title>
+<meta name="description" content="분당우리교회 4청년부 이종환 순 기도노트" />
 
 <link rel="preconnect" href="https://cdn.jsdelivr.net" />
 <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
@@ -55,7 +55,7 @@
     <div class="flex items-center justify-between gap-2 py-3">
       <div class="flex items-center gap-2">
         <a href="index" class="nav-link">홈</a>
-        <a href="notice" class="nav-link is-active">공지</a>
+        <a href="prayer-notes" class="nav-link is-active">기도노트</a>
         <a href="calendar" class="nav-link">일정</a>
         <a href="sermon-notes" class="nav-link">말씀노트</a>
       </div>
@@ -73,34 +73,34 @@
       <div class="mb-3 flex justify-start">
         <span class="inline-flex items-center gap-2 rounded-full border border-border bg-surface/60 px-3 py-1 text-[11px] font-medium tracking-[0.18em] text-neon-purple uppercase">
           <span class="h-1.5 w-1.5 rounded-full bg-neon-purple shadow-[0_0_8px_#b566ff]"></span>
-          Notice
+          Prayer Note
         </span>
       </div>
       <h1 class="text-2xl font-bold leading-tight tracking-tight text-foreground sm:text-3xl md:text-4xl">
-        공지
+        기도노트
       </h1>
       <p class="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
-        이종환 순의 소식을 확인하고, 댓글과 좋아요를 남겨보세요.
+        순원들의 기도 나눔을 확인하고, 댓글과 좋아요로 함께해주세요.
       </p>
     </div>
 
     <div id="write-card" class="neon-card reveal-item mb-6 hidden p-5 sm:p-6">
-      <h2 class="mb-3 text-base font-bold text-foreground sm:text-lg">새 공지 작성</h2>
+      <h2 class="mb-3 text-base font-bold text-foreground sm:text-lg">기도노트 작성</h2>
       <form id="write-form" class="space-y-2">
-        <input type="text" name="title" maxlength="200" required placeholder="제목" class="comment-input" />
-        <textarea name="content" maxlength="5000" required placeholder="내용을 입력해주세요" class="comment-input"></textarea>
+        <input type="text" name="title" maxlength="200" required placeholder="제목 (예: 이번 주 기도제목)" class="comment-input" />
+        <textarea name="content" maxlength="5000" required placeholder="기도 나눔을 적어주세요" class="comment-input"></textarea>
         <div class="flex justify-end">
           <button type="submit" class="rounded-full bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue px-5 py-2 text-sm font-semibold text-background transition-transform hover:scale-[1.03]">등록</button>
         </div>
       </form>
     </div>
     <div id="write-login-prompt" class="reveal-item mb-6 hidden rounded-2xl border border-dashed border-border p-5 text-center text-sm text-muted-foreground">
-      <a href="login" class="font-semibold text-neon-purple">로그인</a> 후 글을 작성할 수 있어요.
+      <a href="login" class="font-semibold text-neon-purple">로그인</a> 후 기도노트를 작성할 수 있어요.
     </div>
 
     <div id="post-list" class="space-y-5"></div>
     <div id="empty-state" class="reveal-item hidden text-center text-sm text-muted-foreground py-12">
-      아직 등록된 공지가 없어요.
+      아직 등록된 기도노트가 없어요.
     </div>
 
   </div>
@@ -188,7 +188,7 @@
   }
 
   function deletePost(post, wrap) {
-    if (!window.confirm('이 공지를 삭제할까요? 댓글도 함께 삭제되고 되돌릴 수 없어요.')) return;
+    if (!window.confirm('이 기도노트를 삭제할까요? 댓글도 함께 삭제되고 되돌릴 수 없어요.')) return;
 
     sb.from('notice_posts').delete().eq('id', post.id).then(function (res) {
       if (res.error) return;
@@ -300,7 +300,7 @@
     });
   }
 
-  // ---- 새 공지 작성 (로그인한 사람만) ----
+  // ---- 기도노트 작성 (로그인한 사람만) ----
   var session = getSession();
   var writeCard = document.getElementById('write-card');
   var writeLoginPrompt = document.getElementById('write-login-prompt');
