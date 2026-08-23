@@ -21,7 +21,7 @@ function clearSession() {
 function requireLogin() {
   var s = getSession();
   if (!s) {
-    window.location.href = 'login.html';
+    window.location.href = 'login';
     return null;
   }
   return s;
@@ -30,7 +30,7 @@ function requireLogin() {
 function requireLeader() {
   var s = requireLogin();
   if (s && s.role !== 'leader') {
-    window.location.href = 'mypage.html';
+    window.location.href = 'mypage';
     return null;
   }
   return s;
@@ -42,15 +42,15 @@ function mountAuthNav() {
   var s = getSession();
 
   if (!s) {
-    el.innerHTML = '<a href="login.html" class="nav-link">로그인</a>';
+    el.innerHTML = '<a href="login" class="nav-link">로그인</a>';
     return;
   }
 
   var html = '';
   if (s.role === 'leader') {
-    html += '<a href="admin.html" class="nav-link">관리자</a>';
+    html += '<a href="admin" class="nav-link">관리자</a>';
   }
-  html += '<a href="mypage.html" class="nav-link">' + escapeHtml(s.name) + '님</a>';
+  html += '<a href="mypage" class="nav-link">' + escapeHtml(s.name) + '님</a>';
   html += '<button type="button" id="logout-btn" class="nav-link">로그아웃</button>';
   el.innerHTML = html;
 
@@ -58,7 +58,7 @@ function mountAuthNav() {
   if (btn) {
     btn.addEventListener('click', function () {
       clearSession();
-      window.location.href = 'index.html';
+      window.location.href = 'index';
     });
   }
 }

@@ -37,9 +37,10 @@
   <div class="mx-auto max-w-screen-md px-5">
     <div class="flex items-center justify-between gap-2 py-3">
       <div class="flex items-center gap-2">
-        <a href="index.html" class="nav-link">홈</a>
-        <a href="notice.html" class="nav-link">공지</a>
-        <a href="calendar.html" class="nav-link">일정</a>
+        <a href="index" class="nav-link">홈</a>
+        <a href="notice" class="nav-link">공지</a>
+        <a href="calendar" class="nav-link">일정</a>
+        <a href="sermon-notes" class="nav-link">말씀노트</a>
       </div>
       <div id="nav-auth" class="flex items-center gap-2"></div>
     </div>
@@ -122,14 +123,14 @@
       var member = res.data[0];
       setSession({ id: member.id, name: member.name, role: member.role, pin: pin });
 
-      window.location.href = member.role === 'leader' ? 'admin.html' : 'mypage.html';
+      window.location.href = member.role === 'leader' ? 'admin' : 'mypage';
     });
   });
 
   // 이미 로그인되어 있으면 바로 이동
   var existing = getSession();
   if (existing) {
-    window.location.href = existing.role === 'leader' ? 'admin.html' : 'mypage.html';
+    window.location.href = existing.role === 'leader' ? 'admin' : 'mypage';
   }
 
   var items = document.querySelectorAll('.reveal-item');

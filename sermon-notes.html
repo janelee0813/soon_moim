@@ -1,0 +1,397 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'><stop offset='0%25' stop-color='%23b566ff'/><stop offset='50%25' stop-color='%23ff5fb0'/><stop offset='100%25' stop-color='%235ec8ff'/></linearGradient></defs><rect width='32' height='32' rx='7' ry='7' fill='url(%23g)'/></svg>" />
+<title>말씀노트 - 분당우리교회 4청년부 이종환 순</title>
+<meta name="description" content="분당우리교회 4청년부 이종환 순 말씀노트" />
+
+<link rel="preconnect" href="https://cdn.jsdelivr.net" />
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="assets/tailwind-config.js"></script>
+<link rel="stylesheet" href="assets/theme.css" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="assets/supabase-client.js"></script>
+<script src="assets/app.js"></script>
+<style>
+  .comment-input {
+    width: 100%;
+    border-radius: 0.75rem;
+    border: 1px solid rgba(140,110,200,0.28);
+    background: rgba(10,6,18,0.5);
+    color: #f5f1ff;
+    padding: 10px 12px;
+    font-size: 13px;
+    outline: none;
+  }
+  .comment-input::placeholder { color: #6b6480; }
+  textarea.comment-input { min-height: 80px; resize: vertical; line-height: 1.6; }
+
+  .file-drop {
+    display: block;
+    border: 1px dashed rgba(140,110,200,0.4);
+    border-radius: 0.75rem;
+    padding: 18px;
+    text-align: center;
+    font-size: 13px;
+    color: #9b94b3;
+    cursor: pointer;
+    transition: border-color .15s ease;
+  }
+  .file-drop:hover { border-color: rgba(181,102,255,0.6); }
+
+  .preview-strip, .gallery-strip {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+  .preview-thumb, .gallery-thumb {
+    flex-shrink: 0;
+    width: 96px;
+    height: 96px;
+    border-radius: 0.75rem;
+    object-fit: cover;
+    border: 1px solid rgba(140,110,200,0.28);
+  }
+  .gallery-thumb { cursor: pointer; transition: transform .15s ease; }
+  .gallery-thumb:hover { transform: scale(1.04); }
+
+  .upload-progress { font-size: 12px; color: #5ec8ff; }
+
+  .lightbox-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    background: rgba(5,3,10,0.92);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .lightbox-overlay.is-open { display: flex; }
+  .lightbox-img { max-width: 100%; max-height: 82vh; border-radius: 0.75rem; box-shadow: 0 20px 60px -10px rgba(0,0,0,0.6); }
+  .lightbox-btn {
+    position: absolute;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 9999px;
+    border: 1px solid rgba(140,110,200,0.35);
+    background: rgba(21,16,31,0.8);
+    color: #f5f1ff;
+  }
+  .lightbox-close { top: 16px; right: 16px; }
+  .lightbox-prev { left: 16px; top: 50%; transform: translateY(-50%); }
+  .lightbox-next { right: 16px; top: 50%; transform: translateY(-50%); }
+  .lightbox-count { position: absolute; bottom: 16px; left: 50%; transform: translateX(-50%); font-size: 12px; color: #9b94b3; }
+</style>
+</head>
+<body class="bg-background text-foreground">
+
+<nav class="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur-sm">
+  <div class="mx-auto max-w-screen-md px-5">
+    <div class="flex items-center justify-between gap-2 py-3">
+      <div class="flex items-center gap-2">
+        <a href="index" class="nav-link">홈</a>
+        <a href="notice" class="nav-link">공지</a>
+        <a href="calendar" class="nav-link">일정</a>
+        <a href="sermon-notes" class="nav-link is-active">말씀노트</a>
+      </div>
+      <div id="nav-auth" class="flex items-center gap-2"></div>
+    </div>
+  </div>
+</nav>
+
+<section class="relative overflow-hidden">
+  <div class="grid-bg absolute inset-0 -z-10"></div>
+
+  <div class="mx-auto max-w-screen-md px-5 pt-10 pb-16 sm:pt-14 sm:pb-20">
+
+    <div class="reveal-item mb-8">
+      <div class="mb-3 flex justify-start">
+        <span class="inline-flex items-center gap-2 rounded-full border border-border bg-surface/60 px-3 py-1 text-[11px] font-medium tracking-[0.18em] text-neon-purple uppercase">
+          <span class="h-1.5 w-1.5 rounded-full bg-neon-purple shadow-[0_0_8px_#b566ff]"></span>
+          Sermon Notes
+        </span>
+      </div>
+      <h1 class="text-2xl font-bold leading-tight tracking-tight text-foreground sm:text-3xl md:text-4xl">
+        말씀노트
+      </h1>
+      <p class="mt-3 text-sm leading-relaxed text-muted-foreground sm:text-base">
+        정리한 설교 말씀을 이미지로 나눠보세요.
+      </p>
+    </div>
+
+    <div id="write-card" class="neon-card reveal-item mb-6 hidden p-5 sm:p-6">
+      <h2 class="mb-3 text-base font-bold text-foreground sm:text-lg">말씀노트 올리기</h2>
+      <form id="write-form" class="space-y-2">
+        <input type="text" name="title" maxlength="200" required placeholder="제목 (예: 8/23 주일예배 말씀)" class="comment-input" />
+        <textarea name="caption" maxlength="2000" placeholder="설명(선택)"></textarea>
+
+        <label class="file-drop">
+          <span id="file-drop-label">이미지 선택 (5~7장 정도, 최대 10장)</span>
+          <input type="file" id="file-input" accept="image/*" multiple class="hidden" />
+        </label>
+
+        <div id="preview-strip" class="preview-strip"></div>
+
+        <div class="flex items-center justify-between gap-3">
+          <span id="upload-status" class="upload-progress"></span>
+          <button type="submit" class="rounded-full bg-gradient-to-r from-neon-purple via-neon-pink to-neon-blue px-5 py-2 text-sm font-semibold text-background transition-transform hover:scale-[1.03]">등록</button>
+        </div>
+      </form>
+    </div>
+    <div id="write-login-prompt" class="reveal-item mb-6 hidden rounded-2xl border border-dashed border-border p-5 text-center text-sm text-muted-foreground">
+      <a href="login" class="font-semibold text-neon-purple">로그인</a> 후 말씀노트를 올릴 수 있어요.
+    </div>
+
+    <div id="post-list" class="space-y-5"></div>
+    <div id="empty-state" class="reveal-item hidden text-center text-sm text-muted-foreground py-12">
+      아직 등록된 말씀노트가 없어요.
+    </div>
+
+  </div>
+</section>
+
+<div id="lightbox" class="lightbox-overlay">
+  <button type="button" class="lightbox-btn lightbox-close" id="lightbox-close" aria-label="닫기">
+    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+  </button>
+  <button type="button" class="lightbox-btn lightbox-prev" id="lightbox-prev" aria-label="이전 이미지">
+    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+  </button>
+  <img id="lightbox-img" class="lightbox-img" src="" alt="" />
+  <button type="button" class="lightbox-btn lightbox-next" id="lightbox-next" aria-label="다음 이미지">
+    <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+  </button>
+  <span id="lightbox-count" class="lightbox-count"></span>
+</div>
+
+<script>
+  var textareaEls = document.querySelectorAll('#write-form textarea');
+  textareaEls.forEach(function (el) { el.classList.add('comment-input'); });
+
+  var listEl = document.getElementById('post-list');
+  var emptyEl = document.getElementById('empty-state');
+
+  var revealObs = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      if (entry.isIntersecting) {
+        var delay = Number(entry.target.dataset.delay || 0);
+        setTimeout(function () { entry.target.classList.add('revealed'); }, delay);
+        revealObs.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+
+  function observeAllReveal() {
+    document.querySelectorAll('.reveal-item:not([data-observed])').forEach(function (el) {
+      el.dataset.observed = '1';
+      revealObs.observe(el);
+    });
+  }
+
+  // ---- 라이트박스 ----
+  var lightbox = document.getElementById('lightbox');
+  var lightboxImg = document.getElementById('lightbox-img');
+  var lightboxCount = document.getElementById('lightbox-count');
+  var lightboxImages = [];
+  var lightboxIndex = 0;
+
+  function updateLightbox() {
+    lightboxImg.src = lightboxImages[lightboxIndex];
+    lightboxCount.textContent = (lightboxIndex + 1) + ' / ' + lightboxImages.length;
+  }
+
+  function openLightbox(images, index) {
+    lightboxImages = images;
+    lightboxIndex = index;
+    updateLightbox();
+    lightbox.classList.add('is-open');
+  }
+
+  function closeLightbox() { lightbox.classList.remove('is-open'); }
+
+  document.getElementById('lightbox-close').addEventListener('click', closeLightbox);
+  document.getElementById('lightbox-prev').addEventListener('click', function () {
+    lightboxIndex = (lightboxIndex - 1 + lightboxImages.length) % lightboxImages.length;
+    updateLightbox();
+  });
+  document.getElementById('lightbox-next').addEventListener('click', function () {
+    lightboxIndex = (lightboxIndex + 1) % lightboxImages.length;
+    updateLightbox();
+  });
+  lightbox.addEventListener('click', function (e) {
+    if (e.target === lightbox) closeLightbox();
+  });
+  document.addEventListener('keydown', function (e) {
+    if (!lightbox.classList.contains('is-open')) return;
+    if (e.key === 'Escape') closeLightbox();
+    if (e.key === 'ArrowLeft') document.getElementById('lightbox-prev').click();
+    if (e.key === 'ArrowRight') document.getElementById('lightbox-next').click();
+  });
+
+  // ---- 게시글 렌더 ----
+  function renderPost(post, authorName) {
+    var wrap = document.createElement('article');
+    wrap.className = 'neon-card reveal-item p-5 sm:p-6';
+
+    var metaLine = (authorName ? escapeHtml(authorName) + ' · ' : '') + formatDate(post.created_at);
+    var captionHtml = post.caption
+      ? '<p class="mt-2 text-sm leading-relaxed text-foreground/80 whitespace-pre-wrap">' + escapeHtml(post.caption) + '</p>'
+      : '';
+
+    var galleryHtml = '<div class="gallery-strip mt-3">' +
+      post.image_paths.map(function (url, i) {
+        return '<img src="' + url + '" class="gallery-thumb" data-index="' + i + '" alt="말씀노트 이미지 ' + (i + 1) + '" loading="lazy" />';
+      }).join('') +
+      '</div>';
+
+    wrap.innerHTML =
+      '<div>' +
+        '<h2 class="text-lg font-bold text-foreground sm:text-xl">' + escapeHtml(post.title) + '</h2>' +
+        '<div class="mt-1 text-[11px] text-muted-foreground">' + metaLine + '</div>' +
+      '</div>' +
+      captionHtml +
+      galleryHtml;
+
+    wrap.querySelectorAll('.gallery-thumb').forEach(function (img) {
+      img.addEventListener('click', function () {
+        openLightbox(post.image_paths, Number(img.dataset.index));
+      });
+    });
+
+    return wrap;
+  }
+
+  function loadPosts() {
+    Promise.all([
+      sb.from('sermon_notes').select('*').order('created_at', { ascending: false }),
+      sb.from('members_public').select('id,name')
+    ]).then(function (results) {
+      var posts = results[0].data || [];
+      var members = results[1].data || [];
+      var authorById = {};
+      members.forEach(function (m) { authorById[m.id] = m.name; });
+
+      listEl.innerHTML = '';
+
+      if (posts.length === 0) {
+        emptyEl.classList.remove('hidden');
+        observeAllReveal();
+        return;
+      }
+      emptyEl.classList.add('hidden');
+
+      posts.forEach(function (post, i) {
+        var authorName = post.member_id ? authorById[post.member_id] : null;
+        var el = renderPost(post, authorName);
+        el.dataset.delay = String(i * 80);
+        listEl.appendChild(el);
+      });
+
+      observeAllReveal();
+    });
+  }
+
+  // ---- 말씀노트 작성 (로그인한 사람만) ----
+  var session = getSession();
+  var writeCard = document.getElementById('write-card');
+  var writeLoginPrompt = document.getElementById('write-login-prompt');
+
+  if (session) {
+    writeCard.classList.remove('hidden');
+  } else {
+    writeLoginPrompt.classList.remove('hidden');
+  }
+
+  var fileInput = document.getElementById('file-input');
+  var fileDropLabel = document.getElementById('file-drop-label');
+  var previewStrip = document.getElementById('preview-strip');
+  var selectedFiles = [];
+
+  fileInput.addEventListener('change', function () {
+    selectedFiles = Array.prototype.slice.call(fileInput.files).slice(0, 10);
+    fileDropLabel.textContent = selectedFiles.length
+      ? selectedFiles.length + '장 선택됨 (다시 눌러서 변경)'
+      : '이미지 선택 (5~7장 정도, 최대 10장)';
+
+    previewStrip.innerHTML = '';
+    selectedFiles.forEach(function (file) {
+      var img = document.createElement('img');
+      img.className = 'preview-thumb';
+      img.src = URL.createObjectURL(file);
+      previewStrip.appendChild(img);
+    });
+  });
+
+  var writeForm = document.getElementById('write-form');
+  var uploadStatus = document.getElementById('upload-status');
+
+  writeForm.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var title = writeForm.title.value.trim();
+    var caption = writeForm.caption.value.trim();
+
+    if (!title) return;
+    if (selectedFiles.length === 0) {
+      uploadStatus.textContent = '이미지를 1장 이상 선택해주세요';
+      return;
+    }
+
+    var btn = writeForm.querySelector('button[type="submit"]');
+    btn.disabled = true;
+
+    var uploadedUrls = [];
+    var uploadNext = function (index) {
+      if (index >= selectedFiles.length) {
+        sb.from('sermon_notes')
+          .insert({ title: title, caption: caption || null, member_id: session.id, image_paths: uploadedUrls })
+          .then(function (res) {
+            btn.disabled = false;
+            if (res.error) {
+              uploadStatus.textContent = '등록 중 오류가 발생했어요';
+              return;
+            }
+            uploadStatus.textContent = '';
+            writeForm.reset();
+            selectedFiles = [];
+            previewStrip.innerHTML = '';
+            fileDropLabel.textContent = '이미지 선택 (5~7장 정도, 최대 10장)';
+            loadPosts();
+          });
+        return;
+      }
+
+      uploadStatus.textContent = '이미지 업로드 중 (' + (index + 1) + '/' + selectedFiles.length + ')...';
+
+      var file = selectedFiles[index];
+      var ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+      var path = session.id + '/' + Date.now() + '-' + index + '.' + ext;
+
+      sb.storage.from('sermon-notes').upload(path, file).then(function (res) {
+        if (res.error) {
+          uploadStatus.textContent = '업로드 실패: ' + res.error.message;
+          btn.disabled = false;
+          return;
+        }
+        var publicUrl = sb.storage.from('sermon-notes').getPublicUrl(path).data.publicUrl;
+        uploadedUrls.push(publicUrl);
+        uploadNext(index + 1);
+      });
+    };
+
+    uploadNext(0);
+  });
+
+  observeAllReveal();
+  loadPosts();
+</script>
+
+</body>
+</html>
