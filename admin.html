@@ -255,7 +255,7 @@
           var r = existing[m.id];
           attendState[m.id] = r
             ? { sunday_worship: r.sunday_worship, online_worship: r.online_worship, department_meeting: r.department_meeting, soon_meeting: r.soon_meeting }
-            : { sunday_worship: 'absent', online_worship: false, department_meeting: 'absent', soon_meeting: 'absent' };
+            : { sunday_worship: null, online_worship: false, department_meeting: null, soon_meeting: null };
         });
 
         renderAttendList();
@@ -266,18 +266,32 @@
 
     document.getElementById('attend-save').addEventListener('click', function () {
       var serviceDate = attendDateInput.value;
-      var rows = membersCache.map(function (m) {
-        var st = attendState[m.id];
-        return {
-          member_id: m.id,
-          service_date: serviceDate,
-          sunday_worship: st.sunday_worship,
-          online_worship: st.sunday_worship === 'absent' ? st.online_worship : false,
-          department_meeting: st.department_meeting,
-          soon_meeting: st.soon_meeting,
-          updated_at: new Date().toISOString()
-        };
-      });
+      var msg = document.getElementById('attend-saved-msg');
+
+      var rows = membersCache
+        .map(function (m) {
+          var st = attendState[m.id];
+          return {
+            member_id: m.id,
+            service_date: serviceDate,
+            sunday_worship: st.sunday_worship,
+            online_worship: st.sunday_worship === 'absent' ? st.online_worship : false,
+            department_meeting: st.department_meeting,
+            soon_meeting: st.soon_meeting,
+            updated_at: new Date().toISOString()
+          };
+        })
+        // 아무것도 선택하지 않은 순원은 저장하지 않음 (방학 등으로 체크 자체를 안 하는 주간 대응)
+        .filter(function (row) {
+          return row.sunday_worship !== null || row.department_meeting !== null || row.soon_meeting !== null;
+        });
+
+      if (rows.length === 0) {
+        msg.textContent = '선택된 항목이 없어서 저장하지 않았어요';
+        msg.classList.remove('hidden');
+        setTimeout(function () { msg.classList.add('hidden'); }, 2500);
+        return;
+      }
 
       var btn = document.getElementById('attend-save');
       btn.disabled = true;
@@ -285,7 +299,7 @@
       sb.from('attendance').upsert(rows, { onConflict: 'member_id,service_date' }).then(function (res) {
         btn.disabled = false;
         if (res.error) return;
-        var msg = document.getElementById('attend-saved-msg');
+        msg.textContent = '저장되었습니다';
         msg.classList.remove('hidden');
         setTimeout(function () { msg.classList.add('hidden'); }, 2500);
       });
