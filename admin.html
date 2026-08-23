@@ -687,7 +687,7 @@
           var st = attendState[m.id] || {};
           var noLabel = m.role === 'leader' ? 'S' : String(++num);
 
-          var combinedNote = [noteByMember[m.id], prayerByMember[m.id] ? '[기도제목] ' + prayerByMember[m.id] : '']
+          var combinedNote = [noteByMember[m.id], prayerByMember[m.id] ? '기도제목\n' + prayerByMember[m.id] : '']
             .filter(Boolean)
             .join('\n\n');
 
