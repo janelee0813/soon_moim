@@ -122,13 +122,15 @@
   var FEMALE_HAIR = ['long', 'bobCut', 'curly', 'pigtails', 'curlyBun', 'bobBangs', 'straightBun', 'extraLong', 'curlyHighTop'];
   var MALE_HAIR = ['shortCombover', 'buzzcut', 'fade', 'cap', 'beanie', 'sideShave', 'shortComboverChops', 'balding'];
 
-  function personaAvatarUrl(seed, gender) {
+  function personaAvatarUrl(seed, gender, mouth, eyes) {
     var hairSet = gender === 'M' ? MALE_HAIR : FEMALE_HAIR;
     var facialHairProbability = gender === 'M' ? 25 : 0;
     var params = 'seed=' + encodeURIComponent(seed) +
       '&backgroundColor=' + AVATAR_BG +
       '&facialHairProbability=' + facialHairProbability;
     hairSet.forEach(function (h) { params += '&hair=' + h; });
+    if (mouth) params += '&mouth=' + mouth;
+    if (eyes) params += '&eyes=' + eyes;
     return 'https://api.dicebear.com/7.x/personas/svg?' + params;
   }
 
@@ -145,7 +147,7 @@
 
     var avatarSrc = member.avatar
       ? member.avatar
-      : personaAvatarUrl(member.seedKey, member.gender);
+      : personaAvatarUrl(member.seedKey, member.gender, member.mouth, member.eyes);
 
     wrap.innerHTML =
       '<div class="neon-card avatar-box w-full rounded-2xl">' +
@@ -156,10 +158,47 @@
     return wrap;
   }
 
+  // 순원 표정(눈/입) 계속 바뀌는 효과 - 실제 사진(순장)은 대상에서 제외
+  var EXPR_MOUTH = ['smile', 'bigSmile', 'smirk', 'surprise'];
+  var EXPR_EYES = ['open', 'happy', 'wink'];
+  var renderGeneration = 0;
+
+  function scheduleExpressionChange(img, member, generation) {
+    var delay = 3000 + Math.random() * 3000;
+    setTimeout(function () {
+      if (generation !== renderGeneration) return;
+
+      var mouth = EXPR_MOUTH[Math.floor(Math.random() * EXPR_MOUTH.length)];
+      var eyes = EXPR_EYES[Math.floor(Math.random() * EXPR_EYES.length)];
+      var newSrc = personaAvatarUrl(member.seedKey, member.gender, mouth, eyes);
+
+      var preload = new Image();
+      preload.onload = function () {
+        if (generation !== renderGeneration) return;
+        member.mouth = mouth;
+        member.eyes = eyes;
+        img.style.opacity = '0';
+        setTimeout(function () {
+          img.src = newSrc;
+          img.style.opacity = '1';
+        }, 250);
+      };
+      preload.src = newSrc;
+
+      scheduleExpressionChange(img, member, generation);
+    }, delay);
+  }
+
   function renderMembers(skipFadeIn) {
+    renderGeneration++;
+    var myGeneration = renderGeneration;
     grid.innerHTML = '';
     members.forEach(function (member, i) {
-      grid.appendChild(buildMemberCard(member, i, skipFadeIn));
+      var card = buildMemberCard(member, i, skipFadeIn);
+      grid.appendChild(card);
+      if (!member.avatar) {
+        scheduleExpressionChange(card.querySelector('img'), member, myGeneration);
+      }
     });
   }
 
